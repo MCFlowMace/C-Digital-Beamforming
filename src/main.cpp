@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cmath>
 #include <armadillo>
+#include <cstdlib>
 
 #include "electron.hpp"
 #include "antenna.hpp"
@@ -34,6 +35,11 @@
 int main(int argc, char **argv)
 {
 
+    if(argc!=3) {
+        std::cerr << "args: [grid_size] [N_samples] !" << std::endl;
+        exit(0);
+    }
+
     float e_r = 3.0f;
     float e_phi = 0.0f;
     float w0 = 2*M_PI*26*1e9;
@@ -42,7 +48,10 @@ int main(int argc, char **argv)
     float wmix = 2*M_PI*24.6*1e9;
     int N= 30;
     float R = 5.0f;
-    int n_samples=1000;
+    int grid_size = std::atoi(argv[1]);
+    int n_samples= std::atoi(argv[2]);
+
+    //std::cout << grid_size << " " << n_samples << std::endl;
 
     auto emission = [](float t, float w, float phi) -> float {
                         float dw = 300*1e6;
@@ -61,15 +70,18 @@ int main(int argc, char **argv)
     std::vector<Sample<float>> data;
 
 
-    for(int i=0; i<N; ++i)
+    for(int i=0; i<N; ++i) {
         data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
+    }
 
-    Reconstruction<float> rec(100, data[0]);
+    Reconstruction<float> rec(grid_size, data[0]);
+    //std::cout << "before set array" << std::endl;
     rec.set_antenna_array(array);
+    //std::cout << "before run" << std::endl;
     rec.run(data);
     auto img = rec.img;
 
-    //img.print();
+    img.print();
 
     //samples.frequency_data.print();
     //~ for(int i=0; i<samples.frequency_data.n_elem; ++i) {

@@ -32,8 +32,9 @@ class Grid {
 
         arma::Col<value_t> coords;
 
-        Grid(int grid_size, value_t radius);
-        arma::Col<value_t> define_grid(value_t radius);
+        //Grid(int grid_size, value_t radius);
+        Grid(int grid_size);
+        void define_grid(value_t radius);
 
         std::vector<arma::Mat<value_t>> get_dists_to_points(arma::Mat<value_t> points);
         std::vector<arma::Mat<value_t>> get_grid_time_delay(arma::Mat<value_t> points);
@@ -46,30 +47,22 @@ class Grid {
 };
 
 template <typename value_t>
-Grid<value_t>::Grid(int grid_size, value_t radius):
+Grid<value_t>::Grid(int grid_size):
 grid_size(grid_size),
 coords(grid_size)
 {
-    this->define_grid(radius);
+
 }
 
 template <typename value_t>
-arma::Col<value_t> Grid<value_t>::define_grid(value_t radius)
+void Grid<value_t>::define_grid(value_t radius)
 {
-    //arma::C<value_t> coords(grid_size);
-    //~ arma::Mat<value_t> grid_2d(2, grid_size);
-    //~ //grid_coord=np.linspace(-1,1,grid_size,endpoint=False)+1/grid_size
-    //~ //grid_2d=np.transpose(np.meshgrid(grid_coord,grid_coord))*radius
-
-    //~ for(int i=0; i<grid_size; ++i) {
-        //~ grid_2d[0,i] = ((2*i-1)+1/grid_size);
-        //~ grid_2d[1,i] = ;
-    //~ }
 
     for(int i=0; i<grid_size; ++i) {
-        coords(i) = (-1+(value_t)(2*i+1)/grid_size)*radius;
-        //std::cout << "coords: " <<  coords(i) << std::endl;
+        value_t val = (-1+(value_t)(2*i+1)/grid_size)*radius;
+        coords(i) = val;
     }
+
 }
 
 template <typename value_t>

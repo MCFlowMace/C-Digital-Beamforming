@@ -64,10 +64,14 @@ Sample<value_t>::Sample(arma::Col<value_t> time, arma::Col<value_t> time_data)
 
     frequency = arma::Col<value_t>(upper);
 
-    for(int i=0; i<=upper; ++i)
+    for(int i=0; i<upper; ++i) {
+
         frequency[i] = (i+1)/(timestep*n_samples);
 
+    }
+
     arma::Col<std::complex<value_t>> fft = arma::fft(time_data);
+
     frequency_data = fft.subvec(1,upper+1);
     //frequency_data = fft;
 

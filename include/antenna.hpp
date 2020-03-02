@@ -141,8 +141,9 @@ Sample<value_t> Antenna<value_t>::sample_data(int n_samples, value_t t0, const E
 
     arma::Col<value_t> sample_times(n_samples);
 
-    for(unsigned int i=0; i<n_samples; ++i)
+    for(unsigned int i=0; i<n_samples; ++i) {
         sample_times[i]= i/sample_rate + t0;
+    }
 
     arma::Col<value_t> signal = this->get_mixed_sample(sample_times, e);
     arma::Col<value_t> noise = this->sample_noise(n_samples);

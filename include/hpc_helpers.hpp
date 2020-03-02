@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstdint>
 
+static_assert(sizeof(unsigned long long int) == sizeof(uint64_t), "No 64bit datatype used!");
+typedef unsigned long long int uint64_cu;
 
 #ifndef __CUDACC__
     #include <chrono>
@@ -26,15 +28,17 @@
     #define TIMERSTOP(label)                                                   \
         b##label = std::chrono::system_clock::now();                           \
         std::chrono::duration<double> delta##label = b##label-a##label;        \
-        std::cerr << "# elapsed time ("<< #label <<"): "                       \
-                  << delta##label.count()  << "s" << std::endl;
+        std::cerr << "TIMING: " << delta##label.count() << " s "			   \
+				  << #label << std::endl;
+        //~ std::cerr << "# elapsed time ("<< #label <<"): "                       \
+                  //~ << delta##label.count()  << "s" << std::endl;
 #else
     #define TIMERSTOP(label)                                                   \
             cudaEventRecord(stop##label, 0);                                   \
             cudaEventSynchronize(stop##label);                                 \
             cudaEventElapsedTime(&time##label, start##label, stop##label);     \
-            std::cerr << "TIMING: " << time##label << " ms (" << #label << ")" \
-                      << std::endl;
+            std::cerr << "TIMING: " << time##label << " ms "  				   \
+                      << #label << std::endl;
 #endif
 
 

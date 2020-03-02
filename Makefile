@@ -1,7 +1,8 @@
 
 #c++ compiler options
+EXEC=SERIAL
 GCC=g++
-GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp
+GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
 
 #-D_GLIBCXX_USE_CXX11_ABI=0
 
