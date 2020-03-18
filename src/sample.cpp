@@ -1,5 +1,5 @@
 /*
- * grid.hpp
+ * sample.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,27 +21,42 @@
  *
  */
 
-#pragma once
+#include "sample.hpp"
 
-#include <armadillo>
 
 template <typename value_t>
-class Grid {
+Sample<value_t>::Sample(arma::Col<value_t> time, arma::Col<value_t> time_data)
+{
 
-    public:
+    this->time=time;
+    this->time_data=time_data;
+    n_samples=time.n_elem;
+    timestep=time[1]-time[0];
 
-        arma::Col<value_t> coords;
+    int upper, lower;
 
-        //Grid(int grid_size, value_t radius);
-        Grid(int grid_size);
-        void define_grid(value_t radius);
+    if(!(n_samples%2)) {
+        lower=-n_samples/2;
+        upper=n_samples/2-1;
+    } else {
+        lower=-(n_samples-1)/2;
+        upper=(n_samples-1)/2;
+    }
 
-        std::vector<arma::Mat<value_t>> get_dists_to_points(arma::Mat<value_t> points);
-        std::vector<arma::Mat<value_t>> get_grid_time_delay(arma::Mat<value_t> points);
-        std::vector<arma::Mat<value_t>> get_phis_for_points(arma::Mat<value_t> points);
+    frequency = arma::Col<value_t>(upper);
 
-    private:
-        int grid_size;
+    for(int i=0; i<upper; ++i) {
 
+        frequency[i] = (i+1)/(timestep*n_samples);
 
-};
+    }
+
+    arma::Col<std::complex<value_t>> fft = arma::fft(time_data);
+
+    frequency_data = fft.subvec(1,upper+1);
+    //frequency_data = fft;
+
+}
+
+template class Sample<float>;
+template class Sample<double>;

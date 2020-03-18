@@ -1,5 +1,5 @@
 /*
- * grid.hpp
+ * antenna_array.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,27 +21,22 @@
  *
  */
 
-#pragma once
-
-#include <armadillo>
+#include "antenna_array.hpp"
 
 template <typename value_t>
-class Grid {
+Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
+                                        value_t wmix, value_t sample_rate):
+N(N),
+R(R),
+wmix(wmix)
+{
+    for(int i=0; i<N; ++i) {
+        value_t phi=(value_t)i/N*2*M_PI;
+        value_t x=R*cos(phi);
+        value_t y=R*sin(phi);
+        antennas.push_back(Antenna<value_t>(snr, sample_rate, wmix, x, y));
+    }
+}
 
-    public:
-
-        arma::Col<value_t> coords;
-
-        //Grid(int grid_size, value_t radius);
-        Grid(int grid_size);
-        void define_grid(value_t radius);
-
-        std::vector<arma::Mat<value_t>> get_dists_to_points(arma::Mat<value_t> points);
-        std::vector<arma::Mat<value_t>> get_grid_time_delay(arma::Mat<value_t> points);
-        std::vector<arma::Mat<value_t>> get_phis_for_points(arma::Mat<value_t> points);
-
-    private:
-        int grid_size;
-
-
-};
+template class Antenna_Array<float>;
+template class Antenna_Array<double>;

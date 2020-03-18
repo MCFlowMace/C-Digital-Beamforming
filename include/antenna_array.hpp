@@ -39,17 +39,4 @@ class Antenna_Array {
                                         value_t wmix, value_t sample_rate);
 };
 
-template <typename value_t>
-Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
-                                        value_t wmix, value_t sample_rate):
-N(N),
-R(R),
-wmix(wmix)
-{
-    for(int i=0; i<N; ++i) {
-        value_t phi=(value_t)i/N*2*M_PI;
-        value_t x=R*cos(phi);
-        value_t y=R*sin(phi);
-        antennas.push_back(Antenna<value_t>(snr, sample_rate, wmix, x, y));
-    }
-}
+
