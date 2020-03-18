@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../build/Beamforming 100 1000 > beamforming_rec_test.out
+../../bin/reconstruction 100 1000 > beamforming_rec_test.out
 
 python plot_result.py beamforming_rec_test.out 5
 

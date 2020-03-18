@@ -6,33 +6,33 @@ GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
 
 #-D_GLIBCXX_USE_CXX11_ABI=0
 
-all: release
-
-TARGET = Beamforming
+#all: release
 
 SRCDIR = src
 INCDIR = include
-OBJDIR = build/obj
-BINDIR = build
+OBJDIR = build
+BINDIR = bin
+TESTDIR = test
+
+TARGET = $(BINDIR)/Beamforming
 
 INCLUDES = -I $(INCDIR)
-#LIB_DIR = -L $(HDF5_LIB)
-#LIBS = $(HDF5_LINK_LIBS)
-LIB_DIR =
+LIB_DIR = -L lib
 
 #armadillo for FFT
 LIBS = -larmadillo
-#RUNTIME_SEARCH_PATH = -Wl,-rpath,$(HDF5_LIB)
 
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
+OBJ_TEST := $(filter-out $(OBJDIR)/main.o, $(OBJECTS))
 
 REBUILDABLES = $(OBJECTS) $(BINDIR)/$(TARGET)
 
 # Link c++ and CUDA compiled object files to target executable:
 #@$(GCC) $(GCCFLAGS) $(OBJECTS) $(LIB_DIR) $(LIBS) -Xcompiler \"$(RUNTIME_SEARCH_PATH)\" -o $@
 
-$(BINDIR)/$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS)
 	@$(GCC) $(GCCFLAGS) $(OBJECTS) $(LIB_DIR) $(LIBS) -o $@
 	@echo "Linking complete!"
 
@@ -42,10 +42,17 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
+# Tests
 
-release: $(BINDIR)/$(TARGET)
+reconstruction: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
+	@echo "Linking complete!"
 
 clean :
-	rm -f $(REBUILDABLES)
-	rm -rf $(BINDIR)
-	echo Clean done
+	@echo " Cleaning...";
+	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*
+#rm -f $(REBUILDABLES)
+#rm -rf $(BINDIR)
+#echo Clean done
+
+.PHONY: clean
