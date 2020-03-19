@@ -48,6 +48,10 @@ reconstruction: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
 	@echo "Linking complete!"
 
+event_generator: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
+	@echo "Linking complete!"
+
 clean :
 	@echo " Cleaning...";
 	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*

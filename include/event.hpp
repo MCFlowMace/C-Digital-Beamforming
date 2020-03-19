@@ -21,6 +21,8 @@
  *
  */
 
+#pragma once
+
 #include <vector>
 #include <cmath>
 
@@ -31,17 +33,24 @@ class Event
 
     public:
 
-        Event(value_t x0, value_t y0, const std::vector<value_t>& timestamps,
-                const std::vector<value_t>& w_vals);
+        Event(value_t x0, value_t y0, std::vector<value_t>&& timestamps,
+                std::vector<value_t>&& w_vals);
 
         value_t get_x(value_t t);
         value_t get_y(value_t t);
         value_t get_w(value_t t);
+        value_t get_n_scatter();
+
+        static value_t calc_w(value_t t, value_t t0, value_t w0);
+
+        //~ std::vector<value_t> w_vals; //corresponding frequencies
+        //~ std::vector<value_t> timestamps;
 
     private:
 
         value_t x0;
         value_t y0;
+        int n_scatter;
         //stores the times of the subevents [emerged, scatter_0, scatter_1 ..., dissappeared]
         std::vector<value_t> timestamps;
         std::vector<value_t> w_vals; //corresponding frequencies

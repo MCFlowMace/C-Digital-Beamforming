@@ -21,21 +21,24 @@
  *
  */
 
-#define DW 300*1e6*M_PI //300 MHz/s
+#define DW 0.3*M_PI //300 MHz/s
 #define WK 1e-7*M_PI   //1 circumvolution every 100ns (magnetron motion)
 
 #include "event.hpp"
 
+#include <utility>
+#include <iostream>
+
 template <typename value_t>
 Event<value_t>::Event(value_t x0, value_t y0,
-                        const std::vector<value_t>& timestamps,
-                        const std::vector<value_t>& w_vals):
+                        std::vector<value_t>&& timestamps,
+                        std::vector<value_t>&& w_vals):
 x0(x0),
 y0(y0),
-timestamps(timestamps),
-w_vals(w_vals)
+n_scatter(timestamps.size()-1),
+timestamps(std::move(timestamps)),
+w_vals(std::move(w_vals))
 {
-
 }
 
 template <typename value_t>
@@ -64,7 +67,25 @@ value_t Event<value_t>::get_w(value_t t)
         t0 = timestamps[i];
     }
     //if t>timestamps then the electron has left the trap -> w0=0
+
+    value_t w {0};
+
+    if(w0!=0)
+        w=calc_w(t, t0, w0);
+
+    return w;
+}
+
+template <typename value_t>
+value_t Event<value_t>::calc_w(value_t t, value_t t0, value_t w0)
+{
     return (t-t0)*DW + w0;
+}
+
+template <typename value_t>
+value_t Event<value_t>::get_n_scatter()
+{
+    return n_scatter;
 }
 
 template class Event<float>;
