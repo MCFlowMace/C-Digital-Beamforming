@@ -27,17 +27,37 @@ import matplotlib.pyplot as plt
 
 def main(args):
 
-    data = np.loadtxt("event0.dat")
+    R=5
 
-    print(data.shape)
+    data = np.loadtxt("event0_freq.dat")
+
+    tmin=0.05
+    tmax=0.1
+    wmin=24.6
+    wmax=26.2
+
     data = data[data[:,1]!=0]
     fig, ax = plt.subplots()
     #ax.plot(data[:,0], data[:,1]/(2*np.pi*1e9), ls='None', marker=',')
     ax.plot(data[:,0], data[:,1]/(2*np.pi), ls='None', marker=',')
+    #ax.hist2d(data[:,0], data[:,1]/(2*np.pi),bins=10000, range=[[0,tmax],[0,wmax]])
     ax.set_xlabel('t[s]')
     ax.set_ylabel('f[GHz]')
-    #ax.set_xlim([0,1])
-    #ax.set_ylim([0,1.6])
+    ax.set_xlim([tmin,tmax])
+    ax.set_ylim([wmin,wmax])
+    plt.show()
+
+    data = np.loadtxt("event0_pos.dat")
+
+    fig, ax = plt.subplots()
+    #ax.plot(data[:,0], data[:,1]/(2*np.pi*1e9), ls='None', marker=',')
+    ax.hist2d(data[:,0], data[:,1],bins=100,range=[[-R,R],[-R,R]])
+    #ax.scatter(data[:,0], data[:,1], marker='.')
+    ax.set_aspect('equal')
+    ax.set_xlabel('x[cm]')
+    ax.set_ylabel('y[cm]')
+    ax.set_xlim([-R,R])
+    ax.set_ylim([-R,R])
     plt.show()
 
 if __name__ == '__main__':

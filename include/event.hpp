@@ -33,7 +33,7 @@ class Event
 
     public:
 
-        Event(value_t x0, value_t y0, std::vector<value_t>&& timestamps,
+        Event(value_t r0, value_t phi0, std::vector<value_t>&& timestamps,
                 std::vector<value_t>&& w_vals);
 
         value_t get_x(value_t t);

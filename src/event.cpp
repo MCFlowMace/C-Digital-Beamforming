@@ -21,8 +21,8 @@
  *
  */
 
-#define DW 0.3*M_PI //300 MHz/s
-#define WK 1e-7*M_PI   //1 circumvolution every 100ns (magnetron motion)
+#define DW 0.3*2*M_PI //300 MHz/s
+#define WK 2*M_PI/(4*1e-3)   //1 circumvolution every 4ms (magnetron motion)
 
 #include "event.hpp"
 
@@ -30,11 +30,11 @@
 #include <iostream>
 
 template <typename value_t>
-Event<value_t>::Event(value_t x0, value_t y0,
+Event<value_t>::Event(value_t r0, value_t phi0,
                         std::vector<value_t>&& timestamps,
                         std::vector<value_t>&& w_vals):
-x0(x0),
-y0(y0),
+x0(cos(phi0)*r0),
+y0(sin(phi0)*r0),
 n_scatter(timestamps.size()-1),
 timestamps(std::move(timestamps)),
 w_vals(std::move(w_vals))
@@ -70,8 +70,10 @@ value_t Event<value_t>::get_w(value_t t)
 
     value_t w {0};
 
-    if(w0!=0)
+    if(w0!=0) {
         w=calc_w(t, t0, w0);
+        //std::cout << "calcw!" << std::endl;
+    }
 
     return w;
 }

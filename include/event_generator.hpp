@@ -34,7 +34,11 @@ class Event_Generator
 
     Event_Generator(value_t lambda, value_t trap_efficiency, long seed=-1);
 
-    Event<value_t> generate(value_t t_max, value_t w_max);
+    Event<value_t> generate(value_t t_min, value_t t_max, value_t w_min,
+                                    value_t w_max, value_t R);
+
+    value_t generate_r0(value_t R);
+    value_t generate_phi0();
 
     private:
 
@@ -43,8 +47,9 @@ class Event_Generator
     value_t lambda;
     value_t trap_efficiency; //pitch angles
 
-    value_t generate_t0(value_t t_max);
+    value_t generate_t0(value_t t_min, value_t t_max);
     value_t generate_w(value_t w_min, value_t w_max);
+
     value_t generate_E(value_t E_max);
     value_t next_timestamp(value_t t_old);
     value_t new_frequency(value_t t, value_t t_old, value_t w_old, value_t w_max);

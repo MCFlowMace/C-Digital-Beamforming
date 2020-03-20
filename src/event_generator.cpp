@@ -25,6 +25,7 @@
 #include <chrono>
 #include <random>
 #include <iostream>
+#include <cmath>
 
 #define EPSILON 1E-2
 
@@ -46,14 +47,16 @@ trap_efficiency(trap_efficiency)
 
 //TODO generate position
 template <typename value_t>
-Event<value_t> Event_Generator<value_t>::generate(value_t t_max, value_t w_max)
+Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
+                                                    value_t w_min, value_t w_max,
+                                                    value_t R)
 {
     std::vector<value_t> timestamps;
     std::vector<value_t> w_vals;
 
-    timestamps.push_back(generate_t0(t_max));
+    timestamps.push_back(generate_t0(t_min, t_max));
     w_vals.push_back(value_t(0));
-    w_vals.push_back(generate_w(value_t(0), w_max));
+    w_vals.push_back(generate_w(w_min, w_max));
 
     do {
         int N=timestamps.size();
@@ -67,6 +70,7 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_max, value_t w_max)
         value_t w_old = w_vals[N];
         value_t w = new_frequency(t, t_old, w_old, w_max);
 
+        //outside of observation window
         if(w>w_max)
             break;
 
@@ -79,19 +83,37 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_max, value_t w_max)
     std::cout << "#scatter events: \n";
 
     for(int i=0; i<timestamps.size(); ++i)
-        std::cout << "# t" << timestamps[i] << " f " << w_vals[i+1] << "\n";
+        std::cout << "# t" << timestamps[i] << " f " << w_vals[i+1]/(2*M_PI) << "\n";
 
-    //return Event<value_t>(value_t(0), value_t(0), std::move(timestamps), std::move(w_vals));
-    return {value_t(0), value_t(0), std::move(timestamps), std::move(w_vals)};
+    value_t r0 = generate_r0(R);
+    value_t phi0 = generate_phi0();
+
+    return {r0, phi0, std::move(timestamps), std::move(w_vals)};
 }
 
 template <typename value_t>
-value_t Event_Generator<value_t>::generate_t0(value_t t_max)
+value_t Event_Generator<value_t>::generate_r0(value_t R)
+{
+    std::uniform_real_distribution<value_t> dis(0.0, 1.0);
+    return sqrt(dis(generator))*R;
+
+}
+
+template <typename value_t>
+value_t Event_Generator<value_t>::generate_phi0()
+{
+    std::uniform_real_distribution<value_t> dis(0.0, 1.0);
+    return 2*M_PI*dis(generator);
+
+}
+
+template <typename value_t>
+value_t Event_Generator<value_t>::generate_t0(value_t t_min, value_t t_max)
 {
     std::uniform_real_distribution<value_t> dis(0.0, 1.0);
     value_t rand_val = dis(generator);
 
-    return rand_val*t_max;
+    return rand_val*(t_max-t_min)+t_min;
 }
 
 template <typename value_t>
