@@ -36,7 +36,7 @@ def plot_freq(tmin, tmax, fmin, fmax, data, name):
     ax.set_ylabel('f[GHz]')
     ax.set_xlim([tmin,tmax])
     ax.set_ylim([fmin,fmax])
-    plt.savefig(name, dpi=600)
+    plt.savefig(name, dpi=300)
     plt.close(fig)
 
 def plot_pos(R, data, name):
@@ -50,7 +50,7 @@ def plot_pos(R, data, name):
     ax.set_ylabel('y[cm]')
     ax.set_xlim([-R,R])
     ax.set_ylim([-R,R])
-    plt.savefig(name, dpi=300)
+    plt.savefig(name, dpi=150)
     plt.close(fig)
 
 def main(args):
