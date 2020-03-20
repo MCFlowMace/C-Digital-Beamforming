@@ -24,19 +24,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
-def main(args):
+def plot_freq(tmin, tmax, fmin, fmax, data, name):
 
-    R=5
-
-    data = np.loadtxt("event0_freq.dat")
-
-    tmin=0.05
-    tmax=0.1
-    wmin=24.6
-    wmax=26.2
-
-    data = data[data[:,1]!=0]
     fig, ax = plt.subplots()
     #ax.plot(data[:,0], data[:,1]/(2*np.pi*1e9), ls='None', marker=',')
     ax.plot(data[:,0], data[:,1]/(2*np.pi), ls='None', marker=',')
@@ -44,10 +35,11 @@ def main(args):
     ax.set_xlabel('t[s]')
     ax.set_ylabel('f[GHz]')
     ax.set_xlim([tmin,tmax])
-    ax.set_ylim([wmin,wmax])
-    plt.show()
+    ax.set_ylim([fmin,fmax])
+    plt.savefig(name, dpi=600)
+    plt.close(fig)
 
-    data = np.loadtxt("event0_pos.dat")
+def plot_pos(R, data, name):
 
     fig, ax = plt.subplots()
     #ax.plot(data[:,0], data[:,1]/(2*np.pi*1e9), ls='None', marker=',')
@@ -58,7 +50,47 @@ def main(args):
     ax.set_ylabel('y[cm]')
     ax.set_xlim([-R,R])
     ax.set_ylim([-R,R])
-    plt.show()
+    plt.savefig(name, dpi=300)
+    plt.close(fig)
+
+def main(args):
+
+    parser = argparse.ArgumentParser(description='Plots the event')
+    parser.add_argument('input1', metavar='path1', type=str,
+                       help='path for the frequency input')
+    parser.add_argument('tmin', metavar='tmin', type=float,
+                        help='lower bound of time window')
+    parser.add_argument('tmax', metavar='tmax', type=float,
+                        help='upper bound of time window')
+    parser.add_argument('fmin', metavar='fmin', type=float,
+                        help='lower bound of frequency window')
+    parser.add_argument('fmax', metavar='fmax', type=float,
+                        help='upper bound of frequency window')
+
+    parser.add_argument('input2', metavar='path2', type=str,
+                        help='path for the position input')
+    parser.add_argument('R', metavar='radius', type=float,
+                        help='Radius for the position plot')
+
+
+    args = parser.parse_args()
+
+    inFile1 = args.input1
+    tmin = args.tmin
+    tmax = args.tmax
+    fmin = args.fmin
+    fmax = args.fmax
+
+    inFile2 = args.input2
+    R=args.R
+
+    data = np.loadtxt(inFile1)
+    data = data[data[:,1]!=0]
+    plot_freq(tmin, tmax, fmin, fmax, data, "event0_spec.pdf")
+
+    data = np.loadtxt(inFile2)
+    plot_pos(R, data, "event0_pos.png")
+
 
 if __name__ == '__main__':
     import sys

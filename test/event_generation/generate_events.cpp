@@ -33,6 +33,10 @@
 
 int main(int argc, char **argv)
 {
+    if(argc<6) {
+        std::cerr << "Usage: [tmin] [tmax] [fmin] [fmax] [R]" << std::endl;
+        return -1;
+    }
 
     //float lambda {1/(5*1e-4f)}; //mean lifetime of 500us
     float lambda {1/(1*1e-3f)}; //mean lifetime of 1ms
@@ -41,11 +45,11 @@ int main(int argc, char **argv)
     //Event_Generator<float> gen(lambda, trap_efficiency, 12351);
     Event_Generator<float> gen(lambda, trap_efficiency);
 
-    float t_min = 0.05f;
-    float t_max = 0.1f;
-    float w_min = 2*M_PI*24.6;
-    float w_max = 2*M_PI*26.2;
-    float R = 5.0f;
+    float t_min = std::atof(argv[1]); //0.05f;
+    float t_max = std::atof(argv[2]); //0.1f;
+    float w_min = 2*M_PI*std::atof(argv[3]); //24.6;
+    float w_max = 2*M_PI*std::atof(argv[4]); //26.2;
+    float R = std::atof(argv[5]); //5.0f;
 
     Event<float> event0 = gen.generate(t_min, t_max, w_min, w_max, R);
 
