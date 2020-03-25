@@ -49,7 +49,7 @@ reconstruction: $(OBJECTS)
 	@echo "Linking complete!"
 
 measure-snr: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/measure-snr/measure-snr.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/measure-snr/measure_snr.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
 	@echo "Linking complete!"
 
 clean :
