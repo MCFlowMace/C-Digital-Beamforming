@@ -48,6 +48,10 @@ reconstruction: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
 	@echo "Linking complete!"
 
+measure-snr: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/measure-snr/measure-snr.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
+	@echo "Linking complete!"
+
 clean :
 	@echo " Cleaning...";
 	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*

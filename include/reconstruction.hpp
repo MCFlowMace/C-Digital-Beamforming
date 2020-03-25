@@ -34,23 +34,37 @@ class Reconstruction {
 
     public:
 
-        arma::Mat<value_t> img;
-        arma::Col<value_t> frequency;
+        //arma::Mat<value_t> img;
 
         //arma::field<arma::Cube<std::complex<value_t>>> grid_phase;
 
-        Reconstruction(int grid_size, Sample<value_t> sample);
+        Reconstruction(int grid_size, const arma::Col<value_t>& frequency,
+                        const Antenna_Array<value_t>& array);
 
-        void set_antenna_array(const Antenna_Array<value_t>& array);
+        ~Reconstruction();
+
+        Reconstruction(const Reconstruction& temp_obj) = delete;
+        Reconstruction& operator=(const Reconstruction& temp_obj) = delete;
+
         void run(std::vector<Sample<value_t>> samples);
 
-        std::complex<value_t>* grid_phase;
+        arma::Mat<value_t> get_img(unsigned int bin);
+
+        unsigned int get_max_bin();
+        value_t get_max_val(unsigned int bin);
+        value_t get_mean_val(unsigned int bin);
 
     private:
+
+        void set_antenna_array(const Antenna_Array<value_t>& array);
 
         int grid_size;
         Grid<value_t> grid;
         int N;
         value_t R;
+
+        std::complex<value_t>* grid_phase;
+        arma::Col<value_t> frequency;
+        arma::Cube<value_t> reconstructed;
 };
 

@@ -31,6 +31,7 @@
 #include "antenna.hpp"
 #include "antenna_array.hpp"
 #include "reconstruction.hpp"
+#include "hpc_helpers.hpp"
 
 int main(int argc, char **argv)
 {
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     float e_r = 3.0f;
     float e_phi = 0.0f;
     float w0 = 2*M_PI*26*1e9;
-    float snr = 1000.0f;
+    float snr = 0.5f;
     float sample_rate = 3.2*1e9;
     float wmix = 2*M_PI*24.6*1e9;
     int N= 30;
@@ -68,12 +69,15 @@ int main(int argc, char **argv)
         data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
     }
 
-    Reconstruction<float> rec(grid_size, data[0]);
+    Reconstruction<float> rec(grid_size, data[0].frequency, array);
 
-    rec.set_antenna_array(array);
+    //rec.set_antenna_array(array);
 
     rec.run(data);
-    auto img = rec.img;
+
+    unsigned int index_max = rec.get_max_bin();
+
+    auto img = rec.get_img(index_max);
 
     img.print();
 
