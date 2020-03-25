@@ -30,6 +30,8 @@ N(N),
 R(R),
 wmix(wmix)
 {
+    arma::arma_rng::set_seed_random();
+
     for(int i=0; i<N; ++i) {
         value_t phi=(value_t)i/N*2*M_PI;
         value_t x=R*cos(phi);
