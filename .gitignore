@@ -35,3 +35,7 @@ build
 lib/*
 bin/*
 *.pdf
+*.config
+*.files
+*.includes
+*.creator
