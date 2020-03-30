@@ -26,6 +26,7 @@
 #include <random>
 #include <iostream>
 #include <cmath>
+#include <limits>
 
 #define EPSILON 1E-2
 //energy in eV
@@ -217,13 +218,13 @@ value_t Event_Generator<value_t>::new_frequency(value_t t, value_t t_old,
 
     //std::cout << "E_new: " << E_new << std::endl;
 
-    value_t w_new = ALPHA/E_new;
+    value_t w_new;
 
-    //~ value_t w {0};
-    //~ value_t diff = w_max-w_now;
-
-    //~ if(diff*diff>EPSILON)
-        //~ w = generate_w(w_now, w_max);
+    if(E_new<=0) {
+        w_new = std::numeric_limits<value_t>::max();
+    } else {
+        w_new = ALPHA/E_new;
+    }
 
     //std::cout << "#" << w_now << " " << w_new << " " << w_max << "\n";
     return w_new;
