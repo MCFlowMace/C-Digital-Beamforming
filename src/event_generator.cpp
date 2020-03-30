@@ -28,6 +28,11 @@
 #include <cmath>
 
 #define EPSILON 1E-2
+//energy in eV
+#define E0 12.6
+#define STD 0.925
+#define ALPHA 90
+//ALPHA in MeV*GHz -> converts frequency in GHz to energy in MeV
 
 template <typename value_t>
 Event_Generator<value_t>::Event_Generator(value_t lambda, value_t trap_efficiency, long seed):
@@ -126,12 +131,19 @@ value_t Event_Generator<value_t>::generate_w(value_t w_min, value_t w_max)
 }
 
 template <typename value_t>
-value_t Event_Generator<value_t>::generate_E(value_t E_max)
+value_t Event_Generator<value_t>::get_E_loss()
 {
-    std::uniform_real_distribution<value_t> dis(0.0, 1.0);
-    value_t rand_val = dis(generator);
+    //~ std::uniform_real_distribution<value_t> dis(0.0, 1.0);
+    //~ value_t rand_val = dis(generator);
 
-    return rand_val*E_max;
+    //~ return rand_val*E_max;
+
+    std::normal_distribution<value_t> dis {E0, STD};
+
+    value_t loss = dis(generator);
+
+    std::cout << "E_loss: " << loss << std::endl;
+    return loss;
 }
 
 template <typename value_t>
@@ -164,11 +176,15 @@ value_t Event_Generator<value_t>::new_frequency(value_t t, value_t t_old,
 
     value_t w_now = Event<float>::calc_w(t, t_old, w_old);
 
-    value_t E_now = 1/w_now;
+    value_t E_now = ALPHA/w_now;
 
-    value_t E_new = generate_E(E_now);
+    std::cout << "E_now: " << E_now << std::endl;
 
-    value_t w_new = 1/E_new;
+    value_t E_new = E_now-get_E_loss()*1e-6;
+
+    std::cout << "E_new: " << E_new << std::endl;
+
+    value_t w_new = ALPHA/E_new;
 
     //~ value_t w {0};
     //~ value_t diff = w_max-w_now;

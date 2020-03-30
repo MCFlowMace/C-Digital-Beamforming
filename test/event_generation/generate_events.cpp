@@ -39,8 +39,8 @@ int main(int argc, char **argv)
     }
 
     //float lambda {1/(5*1e-4f)}; //mean lifetime of 500us
-    float lambda {1/(1*1e-3f)}; //mean lifetime of 1ms
-    float trap_efficiency {0.9f}; //trapping probability
+    float lambda {1/(2*1e-4f)}; //mean lifetime of 0.2ms
+    float trap_efficiency {0.5f}; //trapping probability
 
     //Event_Generator<float> gen(lambda, trap_efficiency, 12351);
     Event_Generator<float> gen(lambda, trap_efficiency);

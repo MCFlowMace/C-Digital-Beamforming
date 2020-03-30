@@ -34,8 +34,8 @@ def plot_freq(tmin, tmax, fmin, fmax, data, name):
     #ax.hist2d(data[:,0], data[:,1]/(2*np.pi),bins=10000, range=[[0,tmax],[0,wmax]])
     ax.set_xlabel('t[s]')
     ax.set_ylabel('f[GHz]')
-    ax.set_xlim([tmin,tmax])
-    ax.set_ylim([fmin,fmax])
+    #ax.set_xlim([tmin,tmax])
+    #ax.set_ylim([fmin,fmax])
     plt.savefig(name, dpi=300)
     plt.close(fig)
 
