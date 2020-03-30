@@ -40,6 +40,8 @@ class Event_Generator
     value_t generate_r0(value_t R);
     value_t generate_phi0();
 
+    value_t get_E_loss();
+
     private:
 
     std::mt19937 generator;
@@ -50,7 +52,10 @@ class Event_Generator
     value_t generate_t0(value_t t_min, value_t t_max);
     value_t generate_w(value_t w_min, value_t w_max);
 
-    value_t get_E_loss();
+    value_t get_BW_val();
+    value_t inv_BW(value_t x, value_t t, value_t s);
+
+
     value_t next_timestamp(value_t t_old);
     value_t new_frequency(value_t t, value_t t_old, value_t w_old, value_t w_max);
     bool has_left_trap();

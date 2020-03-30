@@ -52,6 +52,10 @@ event_generator: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
 	@echo "Linking complete!"
 
+e_loss: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/e_loss.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/e_loss
+	@echo "Linking complete!"
+
 clean :
 	@echo " Cleaning...";
 	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*

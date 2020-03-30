@@ -34,3 +34,5 @@
 build
 lib/*
 bin/*
+__pycache__
+*.pyc

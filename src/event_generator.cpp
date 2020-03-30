@@ -34,6 +34,10 @@
 #define ALPHA 90
 //ALPHA in MeV*GHz -> converts frequency in GHz to energy in MeV
 
+#define C 0.48
+#define S 6.25
+#define T 14.3
+
 template <typename value_t>
 Event_Generator<value_t>::Event_Generator(value_t lambda, value_t trap_efficiency, long seed):
 lambda(lambda),
@@ -85,10 +89,10 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
     //std::cout << "count: " << count << std::endl;
     w_vals.push_back(value_t(0));
 
-    std::cout << "#scatter events: \n";
+    //std::cout << "#scatter events: \n";
 
-    for(int i=0; i<timestamps.size(); ++i)
-        std::cout << "# t" << timestamps[i] << " f " << w_vals[i+1]/(2*M_PI) << "\n";
+    //~ for(int i=0; i<timestamps.size(); ++i)
+        //~ std::cout << "# t" << timestamps[i] << " f " << w_vals[i+1]/(2*M_PI) << "\n";
 
     value_t r0 = generate_r0(R);
     value_t phi0 = generate_phi0();
@@ -131,6 +135,24 @@ value_t Event_Generator<value_t>::generate_w(value_t w_min, value_t w_max)
 }
 
 template <typename value_t>
+value_t Event_Generator<value_t>::inv_BW(value_t x, value_t t, value_t s)
+{
+    //used to generate breit-wigner distribution with center t and width s
+
+    return t + s*tan(0.5*M_PI*(2*x-1));
+}
+
+template <typename value_t>
+value_t Event_Generator<value_t>::get_BW_val()
+{
+    //generates half of BW distribution
+    std::uniform_real_distribution<value_t> dis(0.5, 1.0);
+    value_t val = dis(generator);
+
+    return inv_BW(val, T, S);
+}
+
+template <typename value_t>
 value_t Event_Generator<value_t>::get_E_loss()
 {
     //~ std::uniform_real_distribution<value_t> dis(0.0, 1.0);
@@ -138,11 +160,22 @@ value_t Event_Generator<value_t>::get_E_loss()
 
     //~ return rand_val*E_max;
 
-    std::normal_distribution<value_t> dis {E0, STD};
+    std::uniform_real_distribution<value_t> dis_u {0.0, 1.0};
 
-    value_t loss = dis(generator);
+    value_t val = dis_u(generator);
 
-    std::cout << "E_loss: " << loss << std::endl;
+    value_t loss;
+
+    if(val<C) {
+        std::normal_distribution<value_t> dis_g {E0, STD};
+
+        loss = dis_g(generator);
+
+    } else {
+        loss = get_BW_val();
+    }
+
+    //std::cout << "E_loss: " << loss << std::endl;
     return loss;
 }
 
@@ -178,11 +211,11 @@ value_t Event_Generator<value_t>::new_frequency(value_t t, value_t t_old,
 
     value_t E_now = ALPHA/w_now;
 
-    std::cout << "E_now: " << E_now << std::endl;
+    //std::cout << "E_now: " << E_now << std::endl;
 
     value_t E_new = E_now-get_E_loss()*1e-6;
 
-    std::cout << "E_new: " << E_new << std::endl;
+    //std::cout << "E_new: " << E_new << std::endl;
 
     value_t w_new = ALPHA/E_new;
 
@@ -192,7 +225,7 @@ value_t Event_Generator<value_t>::new_frequency(value_t t, value_t t_old,
     //~ if(diff*diff>EPSILON)
         //~ w = generate_w(w_now, w_max);
 
-    std::cout << "#" << w_now << " " << w_new << " " << w_max << "\n";
+    //std::cout << "#" << w_now << " " << w_new << " " << w_max << "\n";
     return w_new;
 }
 

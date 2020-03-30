@@ -22,6 +22,8 @@
 #
 #
 
+#in accordance with https://doi.org/10.1007/s100530050525
+
 c=14.0921
 b=2.5*c
 
@@ -62,23 +64,32 @@ def triangle(n):
     vals = b-np.sqrt((1-u)*(b-c)**2)
     return vals
 
-def replace(data, c):
-    l = int(data.size*c)
+def replace(data, l):
+    #l = int(data.size*c)
     data_m = data
     data_m[:l]=bw(l)
     return data_m
 
-def main(args):
+def plot_loss_dis(ax):
 
     x=np.linspace(0,50,1000)
     data_f=f(x)
+    ax.plot(x,data_f)
 
-    data = np.random.normal(e1,w1/2,100000)
-    data_m=replace(data,0.5)
+def main(args):
+
+    n=100000
+    data = np.empty(n)
+    c=0.52
+    l=int(n*c)
+    data[l:] = np.random.normal(e1,w1/2,n-l)
+    data_m=replace(data,l)
     data_r=data_m[(data_m>0)&(data_m<50)]
-    plt.hist(data_r, density=True,bins=100)
-    plt.plot(x,data_f)
-    plt.show()
+    fig, ax = plt.subplots()
+    ax.hist(data_r, density=True,bins=100)
+    plot_loss_dis(ax)
+    plt.savefig("scatter_dis.pdf")
+    plt.close(fig)
 
 if __name__ == '__main__':
     import sys

@@ -28,8 +28,9 @@
 #include <cmath>
 #include <vector>
 #include <stdio.h>
+#include "hpc_helpers.hpp"
 
-#define float double
+//#define float double
 
 int main(int argc, char **argv)
 {
@@ -51,15 +52,20 @@ int main(int argc, char **argv)
     float w_max = 2*M_PI*std::atof(argv[4]); //26.2;
     float R = std::atof(argv[5]); //5.0f;
 
+    int N=100000;
+
+    //~ TIMERSTART(GEN)
+    //~ for(int i=0; i<N; ++i)
+        //~ gen.generate(t_min, t_max, w_min, w_max, R);
+    //~ TIMERSTOP(GEN)
+
     Event<float> event0 = gen.generate(t_min, t_max, w_min, w_max, R);
 
-    std::cout << "#scattered: " << event0.get_n_scatter() << " times!" << std::endl;
-
+    std::cerr << "#scattered: " << event0.get_n_scatter() << " times!" << std::endl;
     FILE* freq_data;
 
     freq_data = fopen("event0_freq.dat", "w+");
 
-    int N=100000;
     float dt = t_max/N; //dt=10us
     for(int i=0; i<N; ++i) {
         float t = i*dt;
@@ -74,14 +80,15 @@ int main(int argc, char **argv)
 
     for(int i=0; i<N; ++i) {
         float t = i*dt;
-        //~ float r = gen.generate_r0(R);
-        //~ float phi = gen.generate_phi0();
-        //~ float x = cos(phi)*r;
-        //~ float y = sin(phi)*r;
+        /*float r = gen.generate_r0(R);
+        float phi = gen.generate_phi0();
+        float x = cos(phi)*r;
+        float y = sin(phi)*r;*/
         if(event0.get_w(t)!=0.0)
             fprintf(pos_data, "%20.10f %20.10f\n",event0.get_x(t), event0.get_y(t));
         //fprintf(pos_data, "%20.10f %20.10f\n",x, y);
     }
     fclose(pos_data);
+
 }
 
