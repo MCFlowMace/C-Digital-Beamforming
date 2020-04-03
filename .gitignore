@@ -43,3 +43,7 @@ bin/*
 #results
 *.png
 *.pdf
+
+#pycache
+__pycache__
+*.pyc
