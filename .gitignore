@@ -39,3 +39,7 @@ bin/*
 *.files
 *.includes
 *.creator
+
+#results
+*.png
+*.pdf
