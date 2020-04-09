@@ -48,6 +48,10 @@ reconstruction: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
 	@echo "Linking complete!"
 
+threshold-trigger: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger
+	@echo "Linking complete!"
+
 clean :
 	@echo " Cleaning...";
 	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*
