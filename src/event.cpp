@@ -75,7 +75,7 @@ value_t Event<value_t>::get_w(value_t t) const
         //std::cout << "calcw!" << std::endl;
     }
 
-    return w;
+    return w*1e9;
 }
 
 template <typename value_t>
