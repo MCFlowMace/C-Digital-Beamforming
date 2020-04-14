@@ -36,10 +36,10 @@ class Event
         Event(value_t r0, value_t phi0, std::vector<value_t>&& timestamps,
                 std::vector<value_t>&& w_vals);
 
-        value_t get_x(value_t t);
-        value_t get_y(value_t t);
-        value_t get_w(value_t t);
-        value_t get_n_scatter();
+        value_t get_x(value_t t) const;
+        value_t get_y(value_t t) const;
+        value_t get_w(value_t t) const;
+        value_t get_n_scatter() const;
 
         static value_t calc_w(value_t t, value_t t0, value_t w0);
 

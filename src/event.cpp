@@ -42,19 +42,19 @@ w_vals(std::move(w_vals))
 }
 
 template <typename value_t>
-value_t Event<value_t>::get_x(value_t t)
+value_t Event<value_t>::get_x(value_t t) const
 {
     return cos(WK*t)*x0 - sin(WK*t)*y0;
 }
 
 template <typename value_t>
-value_t Event<value_t>::get_y(value_t t)
+value_t Event<value_t>::get_y(value_t t) const
 {
     return sin(WK*t)*x0 + cos(WK*t)*y0;
 }
 
 template <typename value_t>
-value_t Event<value_t>::get_w(value_t t)
+value_t Event<value_t>::get_w(value_t t) const
 {
     value_t w0 {0};
     value_t t0 {0};
@@ -85,7 +85,7 @@ value_t Event<value_t>::calc_w(value_t t, value_t t0, value_t w0)
 }
 
 template <typename value_t>
-value_t Event<value_t>::get_n_scatter()
+value_t Event<value_t>::get_n_scatter() const
 {
     return n_scatter;
 }
