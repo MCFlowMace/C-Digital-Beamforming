@@ -25,7 +25,7 @@
 #include "antenna.hpp"
 
 template<typename value_t>
-value_t emission(float t, float w, float phi)
+value_t emission(value_t t, value_t w, value_t phi)
 {
     return cos(w*t+phi);
 }
