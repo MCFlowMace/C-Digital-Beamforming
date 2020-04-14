@@ -59,23 +59,24 @@ int main(int argc, char **argv)
     Electron<float> e {w0, e_r*cosf(e_phi), e_r*sinf(e_phi), emission};
 
 
-    Antenna_Array<float> array(N, R, snr, wmix, sample_rate);
+    //~ Antenna_Array<float> array(N, R, snr, wmix, sample_rate);
 
-    std::vector<Sample<float>> data;
+    //~ std::vector<Sample<float>> data;
 
 
-    for(int i=0; i<N; ++i) {
-        data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
-    }
+    //~ for(int i=0; i<N; ++i) {
+        //~ data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
+    //~ }
 
-    Reconstruction<float> rec(grid_size, data[0]);
+    //~ Reconstruction<float> rec(grid_size, data[0]);
 
-    rec.set_antenna_array(array);
+    //~ rec.set_antenna_array(array);
 
-    rec.run(data);
-    auto img = rec.img;
+    //~ rec.run(data);
+    //~ auto img = rec.img;
 
-    img.print();
+    //~ img.print();
 
+    return 0;
 }
 

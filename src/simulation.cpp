@@ -24,16 +24,18 @@
 
 #include "simulation.hpp"
 #include "event_generator.hpp"
+#include "antenna_array.hpp"
+#include "hpc_helpers.hpp"
 
 template <typename value_t>
 Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):
 settings(settings)
 {
-
+    this->generation();
 }
 
 template <typename value_t>
-void Simulation<value_t>::event_generation()
+void Simulation<value_t>::generation()
 {
     Event_Generator<value_t> gen(settings.mean_event_lifetime,
                                     settings.trap_efficiency);
@@ -45,19 +47,33 @@ void Simulation<value_t>::event_generation()
 }
 
 template <typename value_t>
-void Simulation<value_t>::event_observation()
+std::vector<std::vector<Sample<value_t>>> Simulation<value_t>::observation(
+                                                value_t t_start, value_t t_end)
 {
-    //~ float dt = t_max/N; //dt=10us
-    //~ for(int i=0; i<N; ++i) {
-        //~ float t = i*dt;
-        //~ event0.get_w(t);
-    //~ }
 
-    //~ for(int i=0; i<N; ++i) {
-        //~ float t = i*dt;
-        //~ if(event0.get_w(t)!=0.0)
-            //~ event0.get_y(t);
-    //~ }
+    Antenna_Array<value_t> array(settings.N, settings.R, settings.snr,
+                                settings.w_mix, settings.sample_rate);
+
+    std::vector<std::vector<Sample<value_t>>> data;
+
+    value_t dt = 1/settings.sample_rate;
+    value_t delta_t = t_end-t_start;
+    int samples = (int)delta_t*settings.sample_rate;
+    int n_packets = SDIV(samples, settings.n_samples);
+
+    for(int i=0; i<settings.N; ++i) {
+        value_t t {t_start};
+        //std::vector<Sample<value_t>> data_i(n_packets);
+        std::vector<Sample<value_t>> data_i;
+        for(int j=0; j<n_packets; ++j) {
+            //data_i[j] = array.antennas[i].sample_data(samples, t, this->events);
+            data_i.push_back(array.antennas[i].sample_data(samples, t, this->events));
+            t+=dt*samples;
+        }
+        data.push_back(data_i);
+    }
+
+    return data;
 }
 
 template class Simulation<float>;

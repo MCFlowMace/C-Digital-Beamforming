@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "event.hpp"
+#include "sample.hpp"
 
 template<typename value_t>
 struct Simulation_Settings
@@ -61,7 +62,8 @@ class Simulation{
         Simulation_Settings<value_t> settings;
         std::vector<Event<value_t>> events;
 
-        void event_generation();
-        void event_observation();
+        void generation();
+        std::vector<std::vector<Sample<value_t>>> observation(value_t t_start,
+                                                        value_t t_end);
 };
 
