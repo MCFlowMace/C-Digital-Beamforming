@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 
     float t_min = std::atof(argv[1]); //0.05f;
     float t_max = std::atof(argv[2]); //0.1f;
-    float w_min = 2*M_PI*std::atof(argv[3]); //24.6;
-    float w_max = 2*M_PI*std::atof(argv[4]); //26.2;
+    float w_min = 2*M_PI*std::atof(argv[3])*1e9; //24.6;
+    float w_max = 2*M_PI*std::atof(argv[4])*1e9; //26.2;
     float R = std::atof(argv[5]); //5.0f;
 
     int N=100000;

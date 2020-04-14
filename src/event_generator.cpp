@@ -64,6 +64,9 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
     std::vector<value_t> timestamps;
     std::vector<value_t> w_vals;
 
+    w_min/=1e9;
+    w_max/=1e9;
+
     timestamps.push_back(generate_t0(t_min, t_max));
     w_vals.push_back(value_t(0));
     w_vals.push_back(generate_w(w_min, w_max));
