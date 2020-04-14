@@ -27,7 +27,7 @@
 #include <cmath>
 
 #include "electron.hpp"
-#include "sample.hpp"
+#include "data_packet.hpp"
 
 template <typename value_t>
 class Antenna {
@@ -36,7 +36,7 @@ class Antenna {
 
         Antenna(value_t snr, value_t sample_rate, value_t wmix, value_t x, value_t y);
 
-        Sample<value_t> sample_data(int n_samples, value_t t0, const Electron<value_t>& e);
+        Data_Packet<value_t> sample_data(int n_samples, value_t t0, const Electron<value_t>& e);
 
         value_t x;
         value_t y;

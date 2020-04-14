@@ -39,10 +39,10 @@ class Reconstruction {
 
         //arma::field<arma::Cube<std::complex<value_t>>> grid_phase;
 
-        Reconstruction(int grid_size, Sample<value_t> sample);
+        Reconstruction(int grid_size, Data_Packet<value_t> sample);
 
         void set_antenna_array(const Antenna_Array<value_t>& array);
-        void run(std::vector<Sample<value_t>> samples);
+        void run(std::vector<Data_Packet<value_t>> samples);
 
         std::complex<value_t>* grid_phase;
 

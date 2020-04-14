@@ -100,7 +100,7 @@ arma::Col<value_t> Antenna<value_t>::get_mixed_sample(const arma::Col<value_t>& 
 }
 
 template <typename value_t>
-Sample<value_t> Antenna<value_t>::sample_data(int n_samples, value_t t0, const Electron<value_t>& e)
+Data_Packet<value_t> Antenna<value_t>::sample_data(int n_samples, value_t t0, const Electron<value_t>& e)
 
 {
     //std::cout << "sample data" << std::endl;
@@ -116,7 +116,7 @@ Sample<value_t> Antenna<value_t>::sample_data(int n_samples, value_t t0, const E
 
     arma::Col<value_t> data = sqrt(snr)*signal+noise;
 
-    return Sample<value_t>(sample_times, data);
+    return Data_Packet<value_t>(sample_times, data);
 }
 
 template class Antenna<float>;

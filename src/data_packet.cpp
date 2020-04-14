@@ -1,5 +1,5 @@
 /*
- * sample.hpp
+ * data_packet.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,24 +21,42 @@
  *
  */
 
-#pragma once
+#include "data_packet.hpp"
 
-#include <armadillo>
 
 template <typename value_t>
-class Sample {
+Data_Packet<value_t>::Data_Packet(arma::Col<value_t> time, arma::Col<value_t> time_data)
+{
 
-    public:
-        Sample(arma::Col<value_t> time, arma::Col<value_t> data_time);
+    this->time=time;
+    this->time_data=time_data;
+    n_samples=time.n_elem;
+    timestep=time[1]-time[0];
 
-        arma::Col<std::complex<value_t>> frequency_data;
-        arma::Col<value_t> frequency;
+    int upper, lower;
 
-        arma::Col<value_t> time;
+    if(!(n_samples%2)) {
+        lower=-n_samples/2;
+        upper=n_samples/2-1;
+    } else {
+        lower=-(n_samples-1)/2;
+        upper=(n_samples-1)/2;
+    }
 
-        arma::Col<value_t> time_data;
+    frequency = arma::Col<value_t>(upper);
 
-        int n_samples;
-        value_t timestep;
-};
+    for(int i=0; i<upper; ++i) {
 
+        frequency[i] = (i+1)/(timestep*n_samples);
+
+    }
+
+    arma::Col<std::complex<value_t>> fft = arma::fft(time_data);
+
+    frequency_data = fft.subvec(1,upper+1);
+    //frequency_data = fft;
+
+}
+
+template class Data_Packet<float>;
+template class Data_Packet<double>;

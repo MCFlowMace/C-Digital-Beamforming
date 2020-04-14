@@ -24,7 +24,7 @@
 #include "reconstruction.hpp"
 
 template <typename value_t>
-Reconstruction<value_t>::Reconstruction(int grid_size, Sample<value_t> sample):
+Reconstruction<value_t>::Reconstruction(int grid_size, Data_Packet<value_t> sample):
 grid_size(grid_size),
 img(grid_size,grid_size),
 grid(grid_size)
@@ -78,7 +78,7 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::run(std::vector<Sample<value_t>> samples)
+void Reconstruction<value_t>::run(std::vector<Data_Packet<value_t>> samples)
 {
     arma::Cube<value_t> reconstructed(frequency.n_elem, grid_size, grid_size);
 

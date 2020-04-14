@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
     Antenna_Array<float> array(N, R, snr, wmix, sample_rate);
 
-    std::vector<Sample<float>> data;
+    std::vector<Data_Packet<float>> data;
 
 
     for(int i=0; i<N; ++i) {
