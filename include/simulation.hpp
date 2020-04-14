@@ -57,13 +57,14 @@ class Simulation{
         //Simulation(value_t run_duration);
         Simulation(Simulation_Settings<value_t> settings);
 
+        std::vector<std::vector<Sample<value_t>>> observation(value_t t_start,
+                                                        value_t t_end);
+
     private:
 
         Simulation_Settings<value_t> settings;
         std::vector<Event<value_t>> events;
 
         void generation();
-        std::vector<std::vector<Sample<value_t>>> observation(value_t t_start,
-                                                        value_t t_end);
 };
 

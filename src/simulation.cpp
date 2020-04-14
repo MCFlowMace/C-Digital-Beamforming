@@ -56,10 +56,15 @@ std::vector<std::vector<Sample<value_t>>> Simulation<value_t>::observation(
 
     std::vector<std::vector<Sample<value_t>>> data;
 
+    std::cout << "sample_rate: " << settings.sample_rate << " t_end " << t_end << std::endl;
+
     value_t dt = 1/settings.sample_rate;
     value_t delta_t = t_end-t_start;
-    int samples = (int)delta_t*settings.sample_rate;
-    int n_packets = SDIV(samples, settings.n_samples);
+    int samples = (int) (delta_t*settings.sample_rate);
+    int n_packets = samples/settings.n_samples; //only take full packets of data
+    //SDIV(samples, settings.n_samples);
+
+    std::cout << "samples: " << samples << " n_packets: " << n_packets << std::endl;
 
     for(int i=0; i<settings.N; ++i) {
         value_t t {t_start};
