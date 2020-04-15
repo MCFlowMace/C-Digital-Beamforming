@@ -29,7 +29,8 @@ template <typename value_t>
 class Sample {
 
     public:
-        Sample(arma::Col<value_t> time, arma::Col<value_t> data_time);
+        Sample(arma::Col<value_t>&& time, arma::Col<value_t>&& data_time);
+        Sample() = default;
 
         arma::Col<std::complex<value_t>> frequency_data;
         arma::Col<value_t> frequency;

@@ -1,6 +1,6 @@
 
 #c++ compiler options
-EXEC=SERIAL
+EXEC=PARALLEL
 GCC=g++
 GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
 

@@ -43,16 +43,6 @@ int main(int argc, char **argv)
 
     Simulation_Settings<float> settings;
 
-    //float e_r = 3.0f;
-    //float e_phi = 0.0f;
-    //float w0 = 2*M_PI*26*1e9;
-    //~ float snr = 1000.0f;
-    //~ float sample_rate = 3.2*1e9;
-    //~ float wmix = 2*M_PI*24.6*1e9;
-    //~ int N= 30;
-    //~ float R = 5.0f;
-    //~ int grid_size = std::atoi(argv[1]);
-    //~ int n_samples= std::atoi(argv[2]);
 
     int grid_size = std::atoi(argv[1]);
 
@@ -60,9 +50,9 @@ int main(int argc, char **argv)
     settings.w_min = 2*M_PI*24.6*1e9;
     settings.w_max = 2*M_PI*26.2*1e9;
     settings.R = 5.0f;
-    settings.run_duration = 0.005f;
     settings.mean_event_lifetime = 1/(2*1e-4f);
     settings.trap_efficiency = 0.5f;
+    settings.run_duration = 0.005f;
 
     //event observation and data generation
     settings.N = 30; //antennas
@@ -71,30 +61,11 @@ int main(int argc, char **argv)
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    //~ auto emission = [](float t, float w, float phi) -> float {
-                        //~ float dw = 300*1e6;
-                        //~ return cosf((w+dw*t)*t+phi);
-                    //~ };
-
-    //~ Electron<float> e {w0, e_r*cosf(e_phi), e_r*sinf(e_phi), emission};
-
-
-    //~ Antenna_Array<float> array(N, R, snr, wmix, sample_rate);
-
-    //~ std::vector<Sample<float>> data;
-
-
-    //~ for(int i=0; i<N; ++i) {
-        //~ data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
-    //~ }
-
     Simulation<float> sim(settings);
 
     TIMERSTART(SAMPLE)
-    std::vector<std::vector<Sample<float>>> data_out = sim.observation(0.0f, 10*settings.n_samples/settings.sample_rate);
+    std::vector<std::vector<Sample<float>>> data_out = sim.observation(0.0f, 2*1000*settings.n_samples/settings.sample_rate);
     TIMERSTOP(SAMPLE)
-
-    std::cout << data_out[0].size() << std::endl;
 
     std::vector<Sample<float>> data_in;
 

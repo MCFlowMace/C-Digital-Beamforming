@@ -112,6 +112,7 @@ arma::Col<value_t> Antenna<value_t>::get_mixed_sample(
         //samples[i] = 1/dist*e.emission(t[i], e.w-w_mix, -delta_t*e.w-phi);
         samples[i]=accum;
     }
+
     return samples;
 }
 
@@ -135,7 +136,9 @@ Sample<value_t> Antenna<value_t>::sample_data(
 
     arma::Col<value_t> data = sqrt(snr)*signal+noise;
 
-    return Sample<value_t>(sample_times, data);
+    //std::cout << "addr sample: " << &data[0] << std::endl;
+
+    return Sample<value_t>(std::move(sample_times), std::move(data));
 }
 
 template class Antenna<float>;

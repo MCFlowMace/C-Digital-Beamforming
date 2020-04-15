@@ -65,7 +65,7 @@ std::vector<std::vector<Sample<value_t>>> Simulation<value_t>::observation(
     //SDIV(samples, settings.n_samples);
 
     //std::cerr << "delta_t " << delta_t << " run time " << settings.run_duration << std::endl;
-    //std::cerr << "samples: " << samples << " n_packets: " << n_packets << std::endl;
+    std::cerr << "samples: " << samples << " n_packets: " << n_packets << std::endl;
 
 #ifdef PARALLEL
     #pragma omp parallel
@@ -76,17 +76,19 @@ std::vector<std::vector<Sample<value_t>>> Simulation<value_t>::observation(
     for(int i=0; i<settings.N; ++i) {
         //std::cout << i << " " << omp_get_thread_num() << std::endl;
         value_t t {t_start};
-        //std::vector<Sample<value_t>> data_i(n_packets);
-        std::vector<Sample<value_t>> data_i;
+        std::vector<Sample<value_t>> data_i(n_packets);
+        //std::vector<Sample<value_t>> data_i;
         for(int j=0; j<n_packets; ++j) {
             //data_i[j] = array.antennas[i].sample_data(samples, t, this->events);
-            data_i.push_back(array.antennas[i].sample_data(settings.n_samples, t, this->events));
+            //data_i.push_back(std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events)));
+            data_i[j] = std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events));
             t+=dt*samples;
-
             //std::cout << "i, j " << i << ", " << j << std::endl;
         }
+        //std::cout << "addr observation: " << &data_i[0].time_data[0] << std::endl;
         //data.push_back(data_i);
-        data[i] = data_i;
+        data[i] = std::move(data_i);
+        //std::cout << "addr observation 2: " << &data[i][0].time_data[0] << std::endl;
     }
 
 #ifdef PARALLEL
