@@ -29,9 +29,11 @@
 
 template <typename value_t>
 Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):
-settings(settings)
+settings(settings),
+w_mat((int) (settings.sample_rate*settings.run_duration),settings.n_events)
 {
     this->generation();
+    this->fill_w_mat();
 }
 
 template <typename value_t>
@@ -44,6 +46,18 @@ void Simulation<value_t>::generation()
         events.push_back(gen.generate(value_t{0}, settings.run_duration,
                                         settings.w_min, settings.w_max,
                                         settings.R));
+}
+
+template <typename value_t>
+void Simulation<value_t>::fill_w_mat()
+{
+    int n_samples = (int) (settings.sample_rate*settings.run_duration);
+    value_t dt = 1/settings.sample_rate;
+    for(int i=0; i<settings.n_events; ++i) {
+        for(int j=0; j<n_samples; ++j) {
+            w_mat(j,i) = events[i].get_w(dt*j);
+        }
+    }
 }
 
 template <typename value_t>

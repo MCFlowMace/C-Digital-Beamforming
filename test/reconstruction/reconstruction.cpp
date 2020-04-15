@@ -61,16 +61,38 @@ int main(int argc, char **argv)
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
+    settings.run_duration = 5*settings.n_samples/settings.sample_rate; //5 data packets
+
     Simulation<float> sim(settings);
 
     TIMERSTART(SAMPLE)
-    std::vector<std::vector<Sample<float>>> data_out = sim.observation(0.0f, 2*1000*settings.n_samples/settings.sample_rate);
+    std::vector<std::vector<Sample<float>>> data_out = sim.observation(0.0f, 5*settings.n_samples/settings.sample_rate);
     TIMERSTOP(SAMPLE)
 
     std::vector<Sample<float>> data_in;
 
     for(int i=0; i<data_out.size(); ++i)
         data_in.push_back(data_out[i][0]);
+
+    sim.w_mat.print();
+
+    std::vector<bool> truth(data_out[0].size());
+
+    for(int i=0; i<truth.size(); ++i) {
+        truth[i]=false;
+        for(int j=i*settings.n_samples; j<(i+1)*settings.n_samples; ++j) {
+            std::cout << i << " " << j << " " << sim.w_mat.n_rows << " " << truth.size() << std::endl;
+            if(sim.w_mat(j,0)!=0.0) {
+                truth[i]=true;
+                break;
+            }
+        }
+    }
+    std::cout << "done" << std::endl;
+
+    for(int i=0; i<truth.size(); ++i) {
+        std::cout << truth[i] << std::endl;
+    }
 
     Reconstruction<float> rec(grid_size, data_in[0]);
 

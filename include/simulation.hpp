@@ -24,6 +24,7 @@
 #pragma once
 
 #include <vector>
+#include <armadillo>
 
 #include "event.hpp"
 #include "sample.hpp"
@@ -60,11 +61,14 @@ class Simulation{
         std::vector<std::vector<Sample<value_t>>> observation(value_t t_start,
                                                         value_t t_end);
 
+        arma::Mat<value_t> w_mat;
+
     private:
 
         Simulation_Settings<value_t> settings;
         std::vector<Event<value_t>> events;
 
         void generation();
+        void fill_w_mat();
 };
 
