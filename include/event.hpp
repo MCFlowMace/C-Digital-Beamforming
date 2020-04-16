@@ -1,5 +1,5 @@
 /*
- * data_packet.hpp
+ * event.hpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -23,24 +23,36 @@
 
 #pragma once
 
-#include <armadillo>
+#include <vector>
+#include <cmath>
+
 
 template <typename value_t>
-class Data_Packet {
+class Event
+{
 
     public:
 
-        Data_Packet(arma::Col<value_t>&& time, arma::Col<value_t>&& data_time);
-        Data_Packet() = default;
+        Event(value_t r0, value_t phi0, std::vector<value_t>&& timestamps,
+                std::vector<value_t>&& w_vals);
 
-        arma::Col<std::complex<value_t>> frequency_data;
-        arma::Col<value_t> frequency;
+        value_t get_x(value_t t) const;
+        value_t get_y(value_t t) const;
+        value_t get_w(value_t t) const;
+        value_t get_n_scatter() const;
 
-        arma::Col<value_t> time;
+        static value_t calc_w(value_t t, value_t t0, value_t w0);
 
-        arma::Col<value_t> time_data;
+        //~ std::vector<value_t> w_vals; //corresponding frequencies
+        //~ std::vector<value_t> timestamps;
 
-        int n_samples;
-        value_t timestep;
+    private:
+
+        value_t x0;
+        value_t y0;
+        int n_scatter;
+        //stores the times of the subevents [emerged, scatter_0, scatter_1 ..., dissappeared]
+        std::vector<value_t> timestamps;
+        std::vector<value_t> w_vals; //corresponding frequencies
+
 };
-

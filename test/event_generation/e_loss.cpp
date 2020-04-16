@@ -1,5 +1,5 @@
 /*
- * data_packet.hpp
+ * generate_events.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,26 +21,33 @@
  *
  */
 
-#pragma once
 
-#include <armadillo>
+#include <iostream>
+#include "event.hpp"
+#include "event_generator.hpp"
+#include <cmath>
+#include <vector>
+#include <stdio.h>
 
-template <typename value_t>
-class Data_Packet {
+#define float double
 
-    public:
+int main(int argc, char **argv)
+{
 
-        Data_Packet(arma::Col<value_t>&& time, arma::Col<value_t>&& data_time);
-        Data_Packet() = default;
+    //float lambda {1/(5*1e-4f)}; //mean lifetime of 500us
+    float lambda {1/(2*1e-4f)}; //mean lifetime of 0.2ms
+    float trap_efficiency {0.5f}; //trapping probability
 
-        arma::Col<std::complex<value_t>> frequency_data;
-        arma::Col<value_t> frequency;
+    //Event_Generator<float> gen(lambda, trap_efficiency, 12351);
+    Event_Generator<float> gen(lambda, trap_efficiency);
 
-        arma::Col<value_t> time;
+    int N=100000;
 
-        arma::Col<value_t> time_data;
 
-        int n_samples;
-        value_t timestep;
-};
+    for(int i=0; i<N; ++i) {
+        //fprintf(pos_data, "%20.10f %20.10f\n",event0.get_x(t), event0.get_y(t));
+        float E_loss = gen.get_E_loss();
+        std::cout << E_loss << "\n";
+    }
+}
 

@@ -25,13 +25,17 @@
 
 
 template <typename value_t>
-Data_Packet<value_t>::Data_Packet(arma::Col<value_t> time, arma::Col<value_t> time_data)
+Data_Packet<value_t>::Data_Packet(arma::Col<value_t>&& time,
+                                    arma::Col<value_t>&& time_data):
+time(std::move(time)),
+time_data(std::move(time_data))
 {
 
-    this->time=time;
-    this->time_data=time_data;
-    n_samples=time.n_elem;
-    timestep=time[1]-time[0];
+   // this->time=time;
+   // this->time_data=time_data;
+
+    n_samples=this->time.n_elem;
+    timestep=this->time[1]-this->time[0];
 
     int upper, lower;
 
@@ -51,7 +55,7 @@ Data_Packet<value_t>::Data_Packet(arma::Col<value_t> time, arma::Col<value_t> ti
 
     }
 
-    arma::Col<std::complex<value_t>> fft = arma::fft(time_data);
+    arma::Col<std::complex<value_t>> fft = arma::fft(this->time_data);
 
     frequency_data = fft.subvec(1,upper+1);
     //frequency_data = fft;

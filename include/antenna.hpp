@@ -25,18 +25,22 @@
 
 #include <armadillo>
 #include <cmath>
+#include <vector>
 
 #include "electron.hpp"
 #include "data_packet.hpp"
+#include "event.hpp"
 
 template <typename value_t>
 class Antenna {
 
     public:
 
-        Antenna(value_t snr, value_t sample_rate, value_t wmix, value_t x, value_t y);
+        Antenna(value_t snr, value_t sample_rate, value_t wmix,
+                value_t x, value_t y);
 
-        Data_Packet<value_t> sample_data(int n_samples, value_t t0, const Electron<value_t>& e);
+        Data_Packet<value_t> sample_data(int n_samples, value_t t0,
+                                    const std::vector<Event<value_t>>& events);
 
         value_t x;
         value_t y;
@@ -48,13 +52,14 @@ class Antenna {
         value_t sample_rate;
         value_t w_mix;
 
-        value_t time_delay(const Electron<value_t>& e);
-        value_t spiral_phase(const Electron<value_t>& e);
-        value_t distance_to_electron(const Electron<value_t>& e);
+        value_t time_delay(const Event<value_t>& event, value_t t);
+        value_t spiral_phase(const Event<value_t>& event, value_t t);
+        value_t distance_to_electron(const Event<value_t>& event, value_t t);
 
         arma::Col<value_t> sample_noise(int n_samples);
-        arma::Col<value_t> get_mixed_sample(const arma::Col<value_t>& t,
-                                                const Electron<value_t>& e);
+        arma::Col<value_t> get_mixed_sample(
+                                    const arma::Col<value_t>& t,
+                                    const std::vector<Event<value_t>>& events);
 
 };
 

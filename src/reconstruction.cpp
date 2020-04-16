@@ -88,7 +88,7 @@ void Reconstruction<value_t>::run(std::vector<Data_Packet<value_t>> samples)
 #ifdef PARALLEL
     #pragma omp parallel num_threads(4)
     {
-        std::cout << "threads: " << omp_get_num_threads() << std::endl;
+        //std::cout << "threads: " << omp_get_num_threads() << std::endl;
         #pragma omp for collapse(3)
 #endif
         for(int j=0; j<grid_size; ++j) {

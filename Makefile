@@ -1,6 +1,6 @@
 
 #c++ compiler options
-EXEC=SERIAL
+EXEC=PARALLEL
 GCC=g++
 GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
 
@@ -50,6 +50,14 @@ reconstruction: $(OBJECTS)
 
 threshold-trigger: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger
+	@echo "Linking complete!"
+
+event_generator: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
+	@echo "Linking complete!"
+
+e_loss: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/e_loss.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/e_loss
 	@echo "Linking complete!"
 
 clean :
