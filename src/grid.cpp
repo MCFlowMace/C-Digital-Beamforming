@@ -22,6 +22,7 @@
  */
 
 #include "grid.hpp"
+#include "utility_macros.hpp"
 
 template <typename value_t>
 Grid<value_t>::Grid(int grid_size):
@@ -108,5 +109,4 @@ std::vector<arma::Mat<value_t>> Grid<value_t>::get_phis_for_points(arma::Mat<val
     return phis;
 }
 
-template class Grid<float>;
-template class Grid<double>;
+DEFINE_TEMPLATES(Grid)

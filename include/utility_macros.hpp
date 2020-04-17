@@ -1,5 +1,5 @@
 /*
- * antenna_array.cpp
+ * utility_macros.hpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,24 +21,8 @@
  *
  */
 
-#include "antenna_array.hpp"
-#include "utility_macros.hpp"
+#define DEFINE_TEMPLATE_CLASS(name, type) template class name<type>
+#define DEFINE_TEMPLATES(name)\
+    DEFINE_TEMPLATE_CLASS(name, float);\
+    DEFINE_TEMPLATE_CLASS(name, double);
 
-template <typename value_t>
-Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
-                                        value_t wmix, value_t sample_rate):
-N(N),
-R(R),
-wmix(wmix)
-{
-    arma::arma_rng::set_seed_random();
-
-    for(int i=0; i<N; ++i) {
-        value_t phi=(value_t)i/N*2*M_PI;
-        value_t x=R*cos(phi);
-        value_t y=R*sin(phi);
-        antennas.push_back(Antenna<value_t>(snr, sample_rate, wmix, x, y));
-    }
-}
-
-DEFINE_TEMPLATES(Antenna_Array)

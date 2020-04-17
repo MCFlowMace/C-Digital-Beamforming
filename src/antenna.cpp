@@ -23,6 +23,7 @@
 
 
 #include "antenna.hpp"
+#include "utility_macros.hpp"
 
 template <typename value_t>
 Antenna<value_t>::Antenna(  value_t snr,
@@ -119,5 +120,4 @@ Sample<value_t> Antenna<value_t>::sample_data(int n_samples, value_t t0, const E
     return Sample<value_t>(sample_times, data);
 }
 
-template class Antenna<float>;
-template class Antenna<double>;
+DEFINE_TEMPLATES(Antenna)

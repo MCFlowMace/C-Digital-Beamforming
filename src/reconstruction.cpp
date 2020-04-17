@@ -22,6 +22,7 @@
  */
 
 #include "reconstruction.hpp"
+#include "utility_macros.hpp"
 
 template <typename value_t>
 Reconstruction<value_t>::Reconstruction(int grid_size, Sample<value_t> sample):
@@ -130,5 +131,5 @@ void Reconstruction<value_t>::run(std::vector<Sample<value_t>> samples)
     }
 }
 
-template class Reconstruction<float>;
-template class Reconstruction<double>;
+
+DEFINE_TEMPLATES(Reconstruction)

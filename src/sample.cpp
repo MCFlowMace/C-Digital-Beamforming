@@ -22,6 +22,7 @@
  */
 
 #include "sample.hpp"
+#include "utility_macros.hpp"
 
 
 template <typename value_t>
@@ -58,5 +59,4 @@ Sample<value_t>::Sample(arma::Col<value_t> time, arma::Col<value_t> time_data)
 
 }
 
-template class Sample<float>;
-template class Sample<double>;
+DEFINE_TEMPLATES(Sample)
