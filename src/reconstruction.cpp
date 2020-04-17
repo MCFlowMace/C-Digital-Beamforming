@@ -22,6 +22,7 @@
  */
 
 #include "reconstruction.hpp"
+#include "utility_macros.hpp"
 
 #include <stdexcept>
 #include <string>
@@ -234,5 +235,5 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin)
     return max_val;
 }
 
-template class Reconstruction<float>;
-template class Reconstruction<double>;
+
+DEFINE_TEMPLATES(Reconstruction)

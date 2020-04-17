@@ -22,7 +22,7 @@
  */
 
 #include "data_packet.hpp"
-
+#include "utility_macros.hpp"
 
 template <typename value_t>
 Data_Packet<value_t>::Data_Packet(arma::Col<value_t>&& time,
@@ -62,5 +62,4 @@ time_data(std::move(time_data))
 
 }
 
-template class Data_Packet<float>;
-template class Data_Packet<double>;
+DEFINE_TEMPLATES(Data_Packet)

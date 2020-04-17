@@ -23,6 +23,7 @@
 
 
 #include "antenna.hpp"
+#include "utility_macros.hpp"
 
 template<typename value_t>
 value_t emission(value_t t, value_t w, value_t phi)
@@ -141,5 +142,4 @@ Data_Packet<value_t> Antenna<value_t>::sample_data(
     return Data_Packet<value_t>(std::move(sample_times), std::move(data));
 }
 
-template class Antenna<float>;
-template class Antenna<double>;
+DEFINE_TEMPLATES(Antenna)
