@@ -23,9 +23,13 @@
 
 #pragma once
 
+#include <memory>
+#include <armadillo>
+
 #include <vector>
 #include "binary_classifier.hpp"
 
+template <typename input_t>
 class ROC_Evaluator
 {
     public:
@@ -34,10 +38,14 @@ class ROC_Evaluator
         double get_TPR();
         const std::vector<bool>& get_inference();
 
-        template <typename input_t>
         void evaluate(const Binary_Classifier<input_t>& classifier,
                         const std::vector<input_t>& input,
                         const std::vector<bool>& label);
+
+        arma::Mat<double> ROC_curve(
+                    const std::vector<std::unique_ptr<Binary_Classifier<input_t>>>& classifiers,
+                    const std::vector<input_t>& input,
+                    const std::vector<bool>& label);
 
     private:
 

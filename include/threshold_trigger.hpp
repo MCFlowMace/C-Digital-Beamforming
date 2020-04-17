@@ -31,6 +31,7 @@ class Threshold_Trigger : public Binary_Classifier<value_t>
 
         bool classify(value_t x) const;
         Threshold_Trigger(value_t threshold);
+        Threshold_Trigger() = default;
 
     private:
 

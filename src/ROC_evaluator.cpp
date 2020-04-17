@@ -24,6 +24,7 @@
 #include <stdexcept>
 
 #include "ROC_evaluator.hpp"
+#include "utility_macros.hpp"
 
 
 double evaluate_TPR(const std::vector<bool>& test,
@@ -61,23 +62,26 @@ double evaluate_FPR(const std::vector<bool>& test,
     return evaluate_TPR(test, inv_truth);
 }
 
-double ROC_Evaluator::get_FPR()
+template <typename input_t>
+double ROC_Evaluator<input_t>::get_FPR()
 {
     return FPR;
 }
 
-double ROC_Evaluator::get_TPR()
+template <typename input_t>
+double ROC_Evaluator<input_t>::get_TPR()
 {
     return TPR;
 }
 
-const std::vector<bool>& ROC_Evaluator::get_inference()
+template <typename input_t>
+const std::vector<bool>& ROC_Evaluator<input_t>::get_inference()
 {
     return this->inference;
 }
 
 template <typename input_t>
-void ROC_Evaluator::evaluate(const Binary_Classifier<input_t>& classifier,
+void ROC_Evaluator<input_t>::evaluate(const Binary_Classifier<input_t>& classifier,
                                 const std::vector<input_t>& input,
                                 const std::vector<bool>& label)
 {
@@ -86,10 +90,21 @@ void ROC_Evaluator::evaluate(const Binary_Classifier<input_t>& classifier,
     this->TPR = evaluate_TPR(this->inference, label);
 }
 
-template void ROC_Evaluator::evaluate<double>(const Binary_Classifier<double>&,
-                                                const std::vector<double>&,
-                                                const std::vector<bool>&);
+template <typename input_t>
+arma::Mat<double> ROC_Evaluator<input_t>::ROC_curve(
+                    const std::vector<std::unique_ptr<Binary_Classifier<input_t>>>& classifiers,
+                    const std::vector<input_t>& input,
+                    const std::vector<bool>& label)
+{
+    arma::Mat<double> curve(2, classifiers.size());
 
-template void ROC_Evaluator::evaluate<float>(const Binary_Classifier<float>&,
-                                                const std::vector<float>&,
-                                                const std::vector<bool>&);
+    for(int i=0; i<classifiers.size(); ++i) {
+        this->evaluate((*classifiers[i]), input, label);
+        curve(0, i) = this->get_FPR();
+        curve(1, i) = this->get_TPR();
+    }
+
+    return curve;
+}
+
+DEFINE_TEMPLATES(ROC_Evaluator)
