@@ -60,6 +60,10 @@ e_loss: $(OBJECTS)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/e_loss.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/e_loss
 	@echo "Linking complete!"
 
+measure-snr: $(OBJECTS)
+	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/measure-snr/measure_snr.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
+	@echo "Linking complete!"
+
 clean :
 	@echo " Cleaning...";
 	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*

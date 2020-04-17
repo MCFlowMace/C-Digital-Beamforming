@@ -23,15 +23,32 @@
 
 #include "reconstruction.hpp"
 
-template <typename value_t>
-Reconstruction<value_t>::Reconstruction(int grid_size, Data_Packet<value_t> sample):
-grid_size(grid_size),
-img(grid_size,grid_size),
-grid(grid_size)
-{
-    frequency = sample.frequency;
+#include <stdexcept>
+#include <string>
+#include <limits>
 
+template <typename value_t>
+Reconstruction<value_t>::Reconstruction(int grid_size, arma::Col<value_t> frequency,
+                        const Antenna_Array<value_t>& array):
+grid_size(grid_size),
+grid(grid_size),
+frequency(frequency),
+reconstructed(frequency.n_elem, grid_size, grid_size)
+{
+    //frequency = sample.frequency;
+    //reconstructed(frequency.n_elem, grid_size, grid_size);
     grid_phase=nullptr;
+    set_antenna_array(array);
+
+}
+
+template <typename value_t>
+Reconstruction<value_t>::~Reconstruction()
+{
+    if(grid_phase) {
+        free(grid_phase);
+        grid_phase=nullptr;
+    }
 }
 
 template <typename value_t>
@@ -57,6 +74,7 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 
     std::vector<arma::Mat<value_t>> grid_phis = grid.get_phis_for_points(coords);
 
+    //TODO needs a "free" somewhere + class needs better design with respect to this calloc
     grid_phase = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
     //grid_phase = (std::complex<value_t>*)calloc(30*100*100*499,sizeof(std::complex<value_t>));
 
@@ -78,10 +96,12 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::run(std::vector<Data_Packet<value_t>> samples)
+void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& samples)
 {
-    arma::Cube<value_t> reconstructed(frequency.n_elem, grid_size, grid_size);
+    //arma::Cube<value_t> reconstructed(frequency.n_elem, grid_size, grid_size);
 
+    reconstructed.ones();
+    reconstructed*=-1;
 
     TIMERSTART(REC)
 
@@ -89,16 +109,22 @@ void Reconstruction<value_t>::run(std::vector<Data_Packet<value_t>> samples)
     #pragma omp parallel num_threads(4)
     {
         //std::cout << "threads: " << omp_get_num_threads() << std::endl;
-        #pragma omp for collapse(3)
+        #pragma omp for
 #endif
         for(int j=0; j<grid_size; ++j) {
+            value_t y = grid.coords(j);
             for(int k=0; k<grid_size; ++k) {
-                for(int l=0; l<frequency.n_elem; ++l) {
-                    std::complex<value_t> accum(0);
-                    for(int i=0; i<N; ++i) {
-                        accum += samples[i].frequency_data(l)*grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i];
+                value_t x = grid.coords(k);
+                value_t d = x*x+y*y;
+
+                if(d<=R*R) {
+                    for(int l=0; l<frequency.n_elem; ++l) {
+                        std::complex<value_t> accum(0);
+                        for(int i=0; i<N; ++i) {
+                            accum += samples[i].frequency_data(l)*grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i];
+                        }
+                        reconstructed(l, k, j) = std::abs(accum);
                     }
-                    reconstructed(l, k, j) = std::abs(accum);
                 }
             }
         }
@@ -108,26 +134,104 @@ void Reconstruction<value_t>::run(std::vector<Data_Packet<value_t>> samples)
 
     TIMERSTOP(REC)
 
-    int channel_max=arma::index_max(samples[0].frequency_data);
+}
 
+template <typename value_t>
+unsigned int Reconstruction<value_t>::get_max_bin()
+{
 
-    if(grid_phase)
-        free(grid_phase);
+    value_t max_val = std::numeric_limits<value_t>::min();
+    unsigned int index;
+    for(unsigned int i=0; i<frequency.n_elem; ++i) {
+        for(unsigned int j=0; j<grid_size; ++j) {
+            for(unsigned int l=0; l<grid_size; ++l) {
 
-    for(int i=0; i<grid_size; ++i) {
-        value_t y = grid.coords(i);
-
-        for(int j=0; j<grid_size; ++j) {
-            value_t x = grid.coords(j);
-            value_t d = x*x+y*y;
-
-            if(d>R*R) {
-                img(j,i)=-1;
-            } else {
-                img(j,i) = reconstructed(channel_max, j, i);
+                if(reconstructed(i,j,l)>max_val) {
+                    max_val=reconstructed(i,j,l);
+                    index = i;
+                }
             }
         }
     }
+
+    std::cerr << "Max frequency: " << frequency[index] << std::endl;
+
+    return index;
+}
+
+template <typename value_t>
+arma::Mat<value_t> Reconstruction<value_t>::get_img(unsigned int bin)
+{
+    if(bin >= frequency.n_elem) {
+        std::string err = "Bin " + std::to_string(bin) + " is not a valid frequency bin!";
+        throw std::out_of_range(err);
+    }
+
+    arma::Mat<value_t> img(grid_size, grid_size);
+
+    for(int i=0; i<grid_size; ++i) {
+        //value_t y = grid.coords(i);
+
+        for(int j=0; j<grid_size; ++j) {
+            //value_t x = grid.coords(j);
+            //~ value_t d = x*x+y*y;
+
+            //~ if(d>R*R) {
+                //~ img(j,i)=-1;
+            //~ } else {
+                //~ img(j,i) = reconstructed(bin, j, i);
+            //~ }
+            img(j,i) = reconstructed(bin, j, i);
+        }
+    }
+
+    return img;
+}
+
+template <typename value_t>
+value_t Reconstruction<value_t>::get_mean_val(unsigned int bin)
+{
+    arma::Mat<value_t> img = get_img(bin);
+
+    value_t mean {0};
+    unsigned int count=0;
+    for(int i=0; i<grid_size; ++i) {
+        for(int j=0; j<grid_size; ++j) {
+            if(img(j, i) ==-1)
+                continue;
+
+            count++;
+            mean+=img(j,i);
+        }
+    }
+
+    return mean/=count;
+}
+
+template <typename value_t>
+value_t Reconstruction<value_t>::get_max_val(unsigned int bin)
+{
+    arma::Mat<value_t> img = get_img(bin);
+
+    value_t max_val = std::numeric_limits<value_t>::min();
+    unsigned int x;
+    unsigned int y;
+
+    for(int i=0; i<grid_size; ++i) {
+        for(int j=0; j<grid_size; ++j) {
+            if(img(j, i) ==-1)
+                continue;
+
+            if(img(j, i) > max_val) {
+                max_val=img(j,i);
+                x=i;
+                y=j;
+            }
+        }
+    }
+
+    std::cerr << "max at: " << x << " " << y << std::endl;
+    return max_val;
 }
 
 template class Reconstruction<float>;

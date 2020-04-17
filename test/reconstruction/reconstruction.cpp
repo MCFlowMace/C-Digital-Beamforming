@@ -32,6 +32,7 @@
 #include "antenna_array.hpp"
 #include "reconstruction.hpp"
 #include "simulation.hpp"
+#include "hpc_helpers.hpp"
 
 int main(int argc, char **argv)
 {
@@ -42,7 +43,6 @@ int main(int argc, char **argv)
     }
 
     Simulation_Settings<float> settings;
-
 
     int grid_size = std::atoi(argv[1]);
 
@@ -94,13 +94,16 @@ int main(int argc, char **argv)
         //~ std::cout << truth[i] << std::endl;
     //~ }
 
-    Reconstruction<float> rec(grid_size, data_in[0]);
+    //Reconstruction<float> rec(grid_size, data_in[0]);
 
     Antenna_Array<float> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
 
-    rec.set_antenna_array(array);
+    Reconstruction<float> rec(grid_size, data_in[0].frequency, array);
     rec.run(data_in);
-    auto img = rec.img;
+
+    unsigned int index_max = rec.get_max_bin();
+
+    auto img = rec.get_img(index_max);
 
     img.print();
 

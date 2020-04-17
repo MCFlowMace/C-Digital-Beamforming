@@ -31,32 +31,33 @@
 #include "antenna.hpp"
 #include "antenna_array.hpp"
 #include "reconstruction.hpp"
+#include "hpc_helpers.hpp"
 
 int main(int argc, char **argv)
 {
 
-    if(argc!=3) {
-        std::cerr << "args: [grid_size] [N_samples] !" << std::endl;
-        exit(0);
-    }
+    //~ if(argc!=3) {
+        //~ std::cerr << "args: [grid_size] [N_samples] !" << std::endl;
+        //~ exit(0);
+    //~ }
 
-    float e_r = 3.0f;
-    float e_phi = 0.0f;
-    float w0 = 2*M_PI*26*1e9;
-    float snr = 1000.0f;
-    float sample_rate = 3.2*1e9;
-    float wmix = 2*M_PI*24.6*1e9;
-    int N= 30;
-    float R = 5.0f;
-    int grid_size = std::atoi(argv[1]);
-    int n_samples= std::atoi(argv[2]);
+    //~ float e_r = 3.0f;
+    //~ float e_phi = 0.0f;
+    //~ float w0 = 2*M_PI*26*1e9;
+    //~ float snr = 0.5f;
+    //~ float sample_rate = 3.2*1e9;
+    //~ float wmix = 2*M_PI*24.6*1e9;
+    //~ int N= 30;
+    //~ float R = 5.0f;
+    //~ int grid_size = std::atoi(argv[1]);
+    //~ int n_samples= std::atoi(argv[2]);
 
-    auto emission = [](float t, float w, float phi) -> float {
-                        float dw = 300*1e6;
-                        return cosf((w+dw*t)*t+phi);
-                    };
+    //~ auto emission = [](float t, float w, float phi) -> float {
+                        //~ float dw = 300*1e6;
+                        //~ return cosf((w+dw*t)*t+phi);
+                    //~ };
 
-    Electron<float> e {w0, e_r*cosf(e_phi), e_r*sinf(e_phi), emission};
+    //~ Electron<float> e {w0, e_r*cosf(e_phi), e_r*sinf(e_phi), emission};
 
 
     //~ Antenna_Array<float> array(N, R, snr, wmix, sample_rate);
@@ -68,12 +69,15 @@ int main(int argc, char **argv)
         //~ data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
     //~ }
 
-    //~ Reconstruction<float> rec(grid_size, data[0]);
+    //~ Reconstruction<float> rec(grid_size, data[0].frequency, array);
 
-    //~ rec.set_antenna_array(array);
+    //~ //rec.set_antenna_array(array);
 
     //~ rec.run(data);
-    //~ auto img = rec.img;
+
+    //~ unsigned int index_max = rec.get_max_bin();
+
+    //~ auto img = rec.get_img(index_max);
 
     //~ img.print();
 
