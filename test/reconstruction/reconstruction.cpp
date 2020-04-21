@@ -61,12 +61,13 @@ int main(int argc, char **argv)
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    settings.run_duration = 5*settings.n_samples/settings.sample_rate; //5 data packets
+    int n_packets = 1;
+    settings.run_duration = n_packets*settings.n_samples/settings.sample_rate; //5 data packets
 
     Simulation<float> sim(settings);
 
     TIMERSTART(SAMPLE)
-    std::vector<std::vector<Data_Packet<float>>> data_out = sim.observation(0.0f, 5*settings.n_samples/settings.sample_rate);
+    std::vector<std::vector<Data_Packet<float>>> data_out = sim.observation(0.0f, n_packets*settings.n_samples/settings.sample_rate);
     TIMERSTOP(SAMPLE)
 
     std::vector<Data_Packet<float>> data_in;
@@ -102,6 +103,10 @@ int main(int argc, char **argv)
     rec.run(data_in);
 
     unsigned int index_max = rec.get_max_bin();
+
+    float max_val = rec.get_max_val(index_max);
+
+    std::cerr << "val: " << max_val << std::endl;
 
     auto img = rec.get_img(index_max);
 
