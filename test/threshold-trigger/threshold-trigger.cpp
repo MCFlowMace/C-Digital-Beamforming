@@ -26,6 +26,7 @@
 #include <cmath>
 #include <armadillo>
 #include <cstdlib>
+#include <memory>
 
 #include "electron.hpp"
 #include "antenna.hpp"
@@ -35,6 +36,7 @@
 #include "hpc_helpers.hpp"
 
 #include "threshold_trigger.hpp"
+#include "binary_classifier.hpp"
 #include "ROC_evaluator.hpp"
 
 int main(int argc, char **argv)
@@ -59,19 +61,19 @@ int main(int argc, char **argv)
 
     //event observation and data generation
     settings.N = 30; //antennas
-    settings.snr = 1000.0f;
+    settings.snr = 0.5f;
     settings.sample_rate = 3.2*1e9;
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    int n_packets = 5000;
+    int n_packets = 500;
 
     settings.run_duration = n_packets*settings.n_samples/settings.sample_rate; //5 data packets
 
     Simulation<float> sim(settings);
 
     TIMERSTART(SAMPLE)
-    std::vector<std::vector<Data_Packet<float>>> data_out = sim.observation(0.0f, n_packets*settings.n_samples/settings.sample_rate);
+    std::vector<std::vector<Data_Packet<float>>> data_out = sim.observation(0.0, n_packets*settings.n_samples/settings.sample_rate);
     TIMERSTOP(SAMPLE)
 
     std::vector<bool> truth(data_out[0].size());
@@ -93,6 +95,14 @@ int main(int argc, char **argv)
 
     Reconstruction<float> rec(grid_size, data_out[0][0].frequency, array);
 
+    //~ std::cerr << "times: " << std::endl;
+
+    //~ for(int i=0; i<data_out[0].size(); ++i) {
+        //~ for(int j=0; j<data_out[0][0].n_samples; ++j) {
+            //~ std::cerr << data_out[0][i].time(j) << std::endl;
+        //~ }
+    //~ }
+
     std::vector<float> test_vals;
 
     for(int j=0; j<n_packets; ++j) {
@@ -106,36 +116,38 @@ int main(int argc, char **argv)
         rec.run(data_in);
 
         unsigned int index_max = rec.get_max_bin();
-        test_vals.push_back(rec.get_max_val(index_max));
+        float val_max = rec.get_max_val(index_max);
+        test_vals.push_back(val_max);
+
+        std::cerr << "val_max: " << val_max << std::endl;
     }
+
+    FILE* output;
+
+    output = fopen("output.dat", "w+");
+
+    for(int i=0; i<sim.w_mat.n_rows; ++i) {
+        int j = i/settings.n_samples;
+        fprintf(output, "%20.10f %d %20.10f\n", sim.w_mat(i,0),(int) truth[j], test_vals[j]);
+    }
+
+    fclose(output);
+
+    std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
 
     float threshold=0.5f;
+    while(threshold<100000.0f) {
 
-    while(threshold<10000.0f) {
+        triggers.emplace_back(new Threshold_Trigger<float>(threshold));
+        threshold +=10.0f;
 
-
-        Threshold_Trigger<float> trigger(threshold);
-
-        ROC_Evaluator ev;
-
-        ev.evaluate(trigger, test_vals, truth);
-
-        std::cout << ev.get_FPR() << " " << ev.get_TPR() << std::endl;
-
-        //~ std::cout << "FPR: " << ev.get_FPR() << std::endl;
-        //~ std::cout << "TPR: " << ev.get_TPR() << std::endl;
-
-        //~ for(auto val: ev.get_inference())
-            //~ std::cout << val << " ";
-
-        //~ std::cout << std::endl;
-
-        //~ for(auto val: label)
-            //~ std::cout << val << " ";
-
-        //~ std::cout << std::endl;
-        threshold +=50.0f;
     }
+
+    ROC_Evaluator<float> ev;
+
+    arma::Mat<double> curve = ev.ROC_curve(triggers, test_vals, truth);
+
+    curve.t().print();
 
 }
 
