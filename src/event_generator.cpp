@@ -93,6 +93,12 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
     //std::cout << "count: " << count << std::endl;
     w_vals.push_back(value_t(0));
 
+    std::cerr << "w: ";
+    for(int i=0; i<w_vals.size(); ++i)
+        std::cerr << w_vals[i]/(2*M_PI) << " ";
+
+    std::cerr << std::endl;
+
     //std::cout << "#scatter events: \n";
 
     //~ for(int i=0; i<timestamps.size(); ++i)
@@ -100,6 +106,8 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
 
     value_t r0 = generate_r0(R);
     value_t phi0 = generate_phi0();
+
+    std::cerr << "pos: " << cos(phi0)*r0 << " " << sin(phi0)*r0 << std::endl;
 
     return {r0, phi0, std::move(timestamps), std::move(w_vals)};
 }
@@ -211,7 +219,7 @@ value_t Event_Generator<value_t>::new_frequency(value_t t, value_t t_old,
 
     //value_t w = Event<float>::calc_w(t, t_old, w_old) + dis(generator);
 
-    value_t w_now = Event<float>::calc_w(t, t_old, w_old);
+    value_t w_now = Event<value_t>::calc_w(t, t_old, w_old);
 
     value_t E_now = ALPHA/w_now;
 
