@@ -96,7 +96,7 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
             //data_i[j] = array.antennas[i].sample_data(samples, t, this->events);
             //data_i.push_back(std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events)));
             data_i[j] = std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events));
-            t+=dt*samples;
+            t+=dt*settings.n_samples;
             //std::cout << "i, j " << i << ", " << j << std::endl;
         }
         //std::cout << "addr observation: " << &data_i[0].time_data[0] << std::endl;
