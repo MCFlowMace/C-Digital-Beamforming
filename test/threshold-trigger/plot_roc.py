@@ -24,14 +24,44 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import seaborn as sns
+
+def plot_curve(ax, data, label):
+
+    ax.plot(data[:,0], data[:,1], label=label)
 
 def main(args):
 
-    data = np.loadtxt("result.out")
-    plt.plot(data[:,0], data[:,1], ls='None', marker='o')
-    plt.xlabel("FPR")
-    plt.ylabel("TPR")
-    plt.savefig("roc.pdf")
+    sns.set()
+
+    n_samples = 1000
+    grid_size_vals = [25, 50, 100]
+    snr_vals = [0.1, 0.5, 1]
+    n_packets = 5000
+
+    for snr in snr_vals:
+        fig, ax = plt.subplots()
+        fig.subplots_adjust(bottom=0.15, top=0.9, left=0.15, right=0.75,
+					wspace=0.01, hspace=0.1)
+        for grid_size in grid_size_vals:
+            os.system("../../bin/threshold-trigger " + str(grid_size) + " "\
+                        + str(n_samples) + " " + str(snr) + " "\
+                        + str(n_packets) + " >result.out")
+
+            data = np.loadtxt("result.out")
+            #plt.plot(data[:,0], data[:,1])#, ls='None', marker='o')
+
+            plot_curve(ax, data, label="grid="+str(grid_size))
+
+            os.system("rm result.out")
+
+        ax.set_title("snr="+str(snr))
+        ax.set_ylabel("sensitivity")
+        ax.set_xlabel("1-specificity")
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.savefig("roc_"+str(int(10*snr))+".pdf")
+
     return 0
 
 if __name__ == '__main__':

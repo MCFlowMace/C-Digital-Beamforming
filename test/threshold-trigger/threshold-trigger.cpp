@@ -42,8 +42,8 @@
 int main(int argc, char **argv)
 {
 
-    if(argc!=3) {
-        std::cerr << "args: [grid_size] [N_samples] !" << std::endl;
+    if(argc!=5) {
+        std::cerr << "args: [grid_size] [N_samples] [snr] [n_packets] !" << std::endl;
         exit(0);
     }
 
@@ -61,14 +61,14 @@ int main(int argc, char **argv)
 
     //event observation and data generation
     settings.N = 30; //antennas
-    settings.snr = 0.5f;
+    settings.snr = std::stof(argv[3]); //0.05f;
     settings.sample_rate = 3.2*1e9;
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    int n_packets = 500;
+    int n_packets = std::atoi(argv[4]);
 
-    settings.run_duration = n_packets*settings.n_samples/settings.sample_rate; //5 data packets
+    settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
 
     Simulation<float> sim(settings);
 
@@ -95,14 +95,6 @@ int main(int argc, char **argv)
 
     Reconstruction<float> rec(grid_size, data_out[0][0].frequency, array);
 
-    //~ std::cerr << "times: " << std::endl;
-
-    //~ for(int i=0; i<data_out[0].size(); ++i) {
-        //~ for(int j=0; j<data_out[0][0].n_samples; ++j) {
-            //~ std::cerr << data_out[0][i].time(j) << std::endl;
-        //~ }
-    //~ }
-
     std::vector<float> test_vals;
 
     for(int j=0; j<n_packets; ++j) {
@@ -122,16 +114,16 @@ int main(int argc, char **argv)
         std::cerr << "val_max: " << val_max << std::endl;
     }
 
-    FILE* output;
+    //~ FILE* output;
 
-    output = fopen("output.dat", "w+");
+    //~ output = fopen("output.dat", "w+");
 
-    for(int i=0; i<sim.w_mat.n_rows; ++i) {
-        int j = i/settings.n_samples;
-        fprintf(output, "%20.10f %d %20.10f\n", sim.w_mat(i,0),(int) truth[j], test_vals[j]);
-    }
+    //~ for(int i=0; i<sim.w_mat.n_rows; ++i) {
+        //~ int j = i/settings.n_samples;
+        //~ fprintf(output, "%20.10f %d %20.10f\n", sim.w_mat(i,0),(int) truth[j], test_vals[j]);
+    //~ }
 
-    fclose(output);
+    //~ fclose(output);
 
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
 
