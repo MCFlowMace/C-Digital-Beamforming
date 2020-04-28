@@ -23,6 +23,7 @@
 
 #include "reconstruction.hpp"
 #include "utility_macros.hpp"
+#include "reconstruction_kernel.hpp"
 
 #include <stdexcept>
 #include <string>
@@ -46,10 +47,7 @@ reconstructed(frequency.n_elem, grid_size, grid_size)
 template <typename value_t>
 Reconstruction<value_t>::~Reconstruction()
 {
-    if(grid_phase) {
-        free(grid_phase);
-        grid_phase=nullptr;
-    }
+    free_grid_phase();
 }
 
 template <typename value_t>
@@ -59,6 +57,7 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
     //this->array=array;
     N = array.N;
     R = array.R;
+    wmix = array.wmix;
 
     arma::Mat<value_t> coords(2,N);
 
@@ -76,10 +75,26 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
     std::vector<arma::Mat<value_t>> grid_phis = grid.get_phis_for_points(coords);
 
     //TODO needs a "free" somewhere + class needs better design with respect to this calloc
-    grid_phase = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
-    //grid_phase = (std::complex<value_t>*)calloc(30*100*100*499,sizeof(std::complex<value_t>));
+    std::complex<value_t>* grid_phase_local = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
 
-    value_t wmix = array.wmix;
+    calc_phase(grid_time_delays, grid_phis, grid_phase_local);
+
+    set_grid_phase(&grid_phase_local);
+
+    //data is on GPU now
+    if(grid_phase_local) {
+        free(grid_phase_local);
+        grid_phase_local=nullptr;
+    }
+
+}
+
+template <typename value_t>
+void Reconstruction<value_t>::calc_phase(
+                        const std::vector<arma::Mat<value_t>>& grid_time_delays,
+                        const std::vector<arma::Mat<value_t>>& grid_phis,
+                        std::complex<value_t>* const grid_phase)
+{
 
     for(int j=0; j<grid_size; ++j) {
         for(int k=0; k<grid_size; ++k) {
@@ -94,6 +109,14 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
         }
     }
 
+}
+
+#ifndef USE_GPU
+template <typename value_t>
+void Reconstruction<value_t>::set_grid_phase(std::complex<value_t>** grid_phase)
+{
+    this->grid_phase= *grid_phase;
+    *grid_phase=nullptr;
 }
 
 template <typename value_t>
@@ -136,6 +159,16 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
     TIMERSTOP(REC)
 
 }
+
+template <typename value_t>
+void Reconstruction<value_t>::free_grid_phase()
+{
+    if(grid_phase) {
+        free(grid_phase);
+        grid_phase=nullptr;
+    }
+}
+#endif
 
 template <typename value_t>
 unsigned int Reconstruction<value_t>::get_max_bin()
@@ -235,5 +268,6 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin)
     return max_val;
 }
 
-
+#ifndef USE_GPU
 DEFINE_TEMPLATES(Reconstruction)
+#endif

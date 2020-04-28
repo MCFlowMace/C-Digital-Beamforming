@@ -112,5 +112,8 @@ int main(int argc, char **argv)
 
     img.print();
 
+    //~ for(auto i = rec.reconstructed.begin(); i!=rec.reconstructed.end(); i++)
+        //~ std::cout << *i << std::endl;
+
 }
 

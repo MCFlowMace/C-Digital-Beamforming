@@ -1,8 +1,14 @@
+#parameters
+EXEC=USE_GPU
+ARCH=sm_61
 
 #c++ compiler options
-EXEC=PARALLEL
 GCC=g++
 GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
+
+#NVCC options
+NVCC=nvcc
+NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp
 
 #-D_GLIBCXX_USE_CXX11_ABI=0
 
@@ -25,15 +31,18 @@ LIBS = -larmadillo
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
+SOURCES_CU  := $(wildcard $(SRCDIR)/*.cu)
+OBJECTS_CU  := $(SOURCES_CU:$(SRCDIR)/%.cu=$(OBJDIR)/%.cu.o)
+
 OBJ_TEST := $(filter-out $(OBJDIR)/main.o, $(OBJECTS))
 
-REBUILDABLES = $(OBJECTS) $(BINDIR)/$(TARGET)
+REBUILDABLES = $(OBJECTS) $(OBJECTS_CU) $(BINDIR)/$(TARGET)
 
 # Link c++ and CUDA compiled object files to target executable:
 #@$(GCC) $(GCCFLAGS) $(OBJECTS) $(LIB_DIR) $(LIBS) -Xcompiler \"$(RUNTIME_SEARCH_PATH)\" -o $@
 
-$(TARGET): $(OBJECTS)
-	@$(GCC) $(GCCFLAGS) $(OBJECTS) $(LIB_DIR) $(LIBS) -o $@
+$(TARGET): $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(NVCC_FLAGS) $(OBJECTS) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $@
 	@echo "Linking complete!"
 
 # Compile C++ source files to object files:
@@ -42,26 +51,37 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
+# Compile CUDA source files to object files:
+$(OBJECTS_CU): $(OBJDIR)/%.cu.o : $(SRCDIR)/%.cu
+	@mkdir -p $(@D)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) -c $< -o $@
+	@echo "Compiled "$<" successfully!"
+
+# Link c++ and CUDA compiled object files to target executable:
+$(BINDIR)/$(TARGET): $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(NVCC_FLAGS) $(OBJECTS) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -Xcompiler \"$(RUNTIME_SEARCH_PATH)\" -o $@
+	@echo "Linking complete!"
+
 # Tests
 
-reconstruction: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
+reconstruction: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
 	@echo "Linking complete!"
 
-threshold-trigger: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger
+threshold-trigger: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger
 	@echo "Linking complete!"
 
-event_generator: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
+event_generator: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
 	@echo "Linking complete!"
 
-e_loss: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/event_generation/e_loss.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/e_loss
+e_loss: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/event_generation/e_loss.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/e_loss
 	@echo "Linking complete!"
 
-measure-snr: $(OBJECTS)
-	@$(GCC) $(INCLUDES) $(GCCFLAGS) $(TESTDIR)/measure-snr/measure_snr.cpp $(OBJ_TEST) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
+measure-snr: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/measure-snr/measure_snr.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/measure-snr
 	@echo "Linking complete!"
 
 clean :
