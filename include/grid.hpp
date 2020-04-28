@@ -32,6 +32,8 @@ class Grid {
 
         arma::Col<value_t> coords;
 
+        value_t R;
+
         //Grid(int grid_size, value_t radius);
         Grid(int grid_size);
         void define_grid(value_t radius);

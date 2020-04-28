@@ -54,17 +54,24 @@ class Reconstruction {
         value_t get_max_val(unsigned int bin);
         value_t get_mean_val(unsigned int bin);
 
+        arma::Cube<value_t> reconstructed;
+
     private:
 
         void set_antenna_array(const Antenna_Array<value_t>& array);
+        void set_grid_phase(std::complex<value_t>** grid_phase);
+        void calc_phase(const std::vector<arma::Mat<value_t>>& grid_time_delays,
+                        const std::vector<arma::Mat<value_t>>& grid_phis,
+                        std::complex<value_t>* const grid_phase);
+        void free_grid_phase();
 
         int grid_size;
         Grid<value_t> grid;
         int N;
         value_t R;
+        value_t wmix;
 
         std::complex<value_t>* grid_phase;
         arma::Col<value_t> frequency;
-        arma::Cube<value_t> reconstructed;
 };
 

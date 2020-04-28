@@ -41,6 +41,8 @@ void Grid<value_t>::define_grid(value_t radius)
         coords(i) = val;
     }
 
+    R=radius;
+
 }
 
 template <typename value_t>
