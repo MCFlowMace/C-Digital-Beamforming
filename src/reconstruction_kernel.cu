@@ -59,14 +59,11 @@ __global__ void reconstruction(thrust::complex<value_t>* samples,
             thrust::complex<value_t> accum(0);
 
             for(int l=0; l<N; ++l) {
-                accum += samples[k*bins+l]*grid_phase[((grid_size*i+j)*bins+k)*N+l]; //not coalesced
-                //accum += samples[i].frequency_data(l)*grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i];
+                accum += samples[l*bins+k]*grid_phase[((grid_size*i+j)*bins+k)*N+l]; //not coalesced
+                
             }
-            //reconstructed(k, j, i) = thrust::abs(accum);
             rec[(grid_size*i+j)*bins+k] = thrust::abs(accum);
 
-            if(thrust::abs(accum)>value_t(50000))
-                printf("value: %f\n", thrust::abs(accum));
         }
 
     }
@@ -96,15 +93,13 @@ template <typename value_t>
 void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& samples)
 {
 
-    //reconstructed.ones();
-    //reconstructed*=-1;
 
     TIMERSTART(REC)
 
     int bins = samples[0].frequency.n_elem;
 
     //reorder data
-    thrust::host_vector<thrust::complex<value_t> > samples_H(N*bins);   CUERR
+    thrust::host_vector<thrust::complex<value_t> > samples_H(N*bins, thrust::complex<value_t>(0,1));   CUERR
 
     TIMERSTART(COPY_CPU)
     for(int i=0; i<samples.size(); ++i) {
