@@ -77,8 +77,10 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
     //TODO needs a "free" somewhere + class needs better design with respect to this calloc
     std::complex<value_t>* grid_phase_local = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
 
+	TIMERSTART(CALC_PHASE)
     calc_phase(grid_time_delays, grid_phis, grid_phase_local);
-
+	TIMERSTOP(CALC_PHASE)
+	
     set_grid_phase(&grid_phase_local);
 
     //data is on GPU now
@@ -89,6 +91,7 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 
 }
 
+#ifndef USE_GPU
 template <typename value_t>
 void Reconstruction<value_t>::calc_phase(
                         const std::vector<arma::Mat<value_t>>& grid_time_delays,
@@ -111,7 +114,6 @@ void Reconstruction<value_t>::calc_phase(
 
 }
 
-#ifndef USE_GPU
 template <typename value_t>
 void Reconstruction<value_t>::set_grid_phase(std::complex<value_t>** grid_phase)
 {
@@ -130,9 +132,9 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
     TIMERSTART(REC)
 
 #ifdef PARALLEL
-    #pragma omp parallel num_threads(4)
+    #pragma omp parallel
     {
-        //std::cout << "threads: " << omp_get_num_threads() << std::endl;
+        std::cerr << "threads: " << omp_get_num_threads() << std::endl;
         #pragma omp for
 #endif
         for(int j=0; j<grid_size; ++j) {

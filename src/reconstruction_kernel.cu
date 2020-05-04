@@ -59,14 +59,38 @@ __global__ void reconstruction(thrust::complex<value_t>* samples,
             thrust::complex<value_t> accum(0);
 
             for(int l=0; l<N; ++l) {
-                accum += samples[l*bins+k]*grid_phase[((grid_size*i+j)*bins+k)*N+l]; //not coalesced
-                
+                //accum += samples[l*bins+k]*grid_phase[((grid_size*i+j)*bins+k)*N+l]; //not coalesced
+                accum += samples[l*bins+k]*grid_phase[((l*bins+k)*grid_size+j)*grid_size+i];
             }
             rec[(grid_size*i+j)*bins+k] = thrust::abs(accum);
 
         }
 
     }
+}
+
+template <typename value_t>
+void Reconstruction<value_t>::calc_phase(
+                        const std::vector<arma::Mat<value_t>>& grid_time_delays,
+                        const std::vector<arma::Mat<value_t>>& grid_phis,
+                        std::complex<value_t>* const grid_phase)
+{
+	
+	int bins = frequency.n_elem;
+
+    for(int i=0; i<N; ++i) {
+        for(int l=0; l<bins; ++l) {
+            for(int k=0; k<grid_size; ++k) {
+                for(int j=0; j<grid_size; ++j) {
+                    value_t phi = grid_time_delays[i](k,j)*(2*M_PI*frequency(l)+wmix);
+                    phi += grid_phis[i](k,j);
+                    //grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i] = std::complex<value_t>(cos(phi), sin(phi));
+					grid_phase[((i*bins+l)*grid_size+k)*grid_size+j] = std::complex<value_t>(cos(phi), sin(phi));
+                }
+            }
+        }
+    }
+
 }
 
 template <typename value_t>
@@ -151,8 +175,10 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
     //~ std::cout << "zeros: " << count << std::endl;
 
     //copy back result
+    TIMERSTART(COPY_BACK)
     thrust::copy(reconstructed_D.begin(), reconstructed_D.end(),
                     reconstructed.begin());                             CUERR
+	TIMERSTOP(COPY_BACK)
 
     TIMERSTOP(REC)
 }
