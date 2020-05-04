@@ -79,18 +79,22 @@ void Reconstruction<value_t>::calc_phase(
 	int bins = frequency.n_elem;
 
     for(int i=0; i<N; ++i) {
+		arma::Mat<value_t> time_delay = grid_time_delays[i].t();
+		arma::Mat<value_t> phi_c = grid_phis[i].t();
         for(int l=0; l<bins; ++l) {
+			value_t f = frequency(l);
             for(int k=0; k<grid_size; ++k) {
                 for(int j=0; j<grid_size; ++j) {
-                    value_t phi = grid_time_delays[i](k,j)*(2*M_PI*frequency(l)+wmix);
-                    phi += grid_phis[i](k,j);
+                    //~ value_t phi = grid_time_delays[i](j,k)*(2*M_PI*frequency(l)+wmix);
+                    //~ phi += grid_phis[i](j,k);
+                    value_t phi = time_delay(j,k)*(2*M_PI*f+wmix);
+                    phi += phi_c(j,k);
                     //grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i] = std::complex<value_t>(cos(phi), sin(phi));
 					grid_phase[((i*bins+l)*grid_size+k)*grid_size+j] = std::complex<value_t>(cos(phi), sin(phi));
                 }
             }
         }
     }
-
 }
 
 template <typename value_t>
