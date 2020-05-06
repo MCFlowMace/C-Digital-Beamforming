@@ -73,5 +73,8 @@ class Reconstruction {
 
         std::complex<value_t>* grid_phase;
         arma::Col<value_t> frequency;
+        
+        std::vector<arma::Mat<value_t>> grid_time_delays;
+        std::vector<arma::Mat<value_t>> grid_phis;
 };
 

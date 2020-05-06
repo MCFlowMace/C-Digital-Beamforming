@@ -70,9 +70,13 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
     grid.define_grid(R);
 
 
-    std::vector<arma::Mat<value_t>> grid_time_delays=grid.get_grid_time_delay(coords);
+    //std::vector<arma::Mat<value_t>> grid_time_delays=grid.get_grid_time_delay(coords);
+    
+    grid_time_delays=grid.get_grid_time_delay(coords);
 
-    std::vector<arma::Mat<value_t>> grid_phis = grid.get_phis_for_points(coords);
+    //std::vector<arma::Mat<value_t>> grid_phis = grid.get_phis_for_points(coords);
+    
+    grid_phis = grid.get_phis_for_points(coords);
 
     //TODO needs a "free" somewhere + class needs better design with respect to this calloc
     std::complex<value_t>* grid_phase_local = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
