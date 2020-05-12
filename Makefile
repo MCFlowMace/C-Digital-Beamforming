@@ -8,7 +8,7 @@ GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
 
 #NVCC options
 NVCC=nvcc
-NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp --use_fast_math
+NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda --use_fast_math -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp
 
 #-D_GLIBCXX_USE_CXX11_ABI=0
 

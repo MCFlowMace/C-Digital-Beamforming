@@ -72,13 +72,11 @@ __global__ void reconstruction(thrust::complex<value_t>* samples,
 }
 
 #define NANTENNAS 30
-
-/*
+ /*
 template <typename value_t>
 __global__ void reconstruction_red(thrust::complex<value_t>* samples,
                                 value_t* frequencies, value_t* time_delays,
-                                value_t* phis,
-                                value_t* coords, value_t* rec, value_t R,
+                                value_t* phis, value_t* rec, value_t R,
                                 value_t wmix, int bins, int grid_size, int N)
 {
     int tid = blockDim.x*blockIdx.x+threadIdx.x;
@@ -136,10 +134,15 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 template <typename value_t>
 __global__ void reconstruction_red(thrust::complex<value_t>* samples,
                                 value_t* frequencies, value_t* time_delays,
-                                value_t* phis,
-                                value_t* coords, value_t* rec, value_t R,
+                                value_t* phis, value_t* rec, value_t R,
                                 value_t wmix, int bins, int grid_size, int N)
 {
+	
+	/*
+	 * Fastest so far
+	 * 
+	 * */
+	
     int tid = blockDim.x*blockIdx.x+threadIdx.x;
 
     if(tid<grid_size*grid_size*bins) {
@@ -312,8 +315,9 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
                                                             //samples_H.begin(),
                                                             //samples_H.end()); CUERR
 
-    thrust::device_vector<value_t> coords_D(grid.coords.begin(),
-                                            grid.coords.end());         CUERR
+    //thrust::device_vector<value_t> coords_D(grid.coords.begin(),
+    //                                        grid.coords.end());         CUERR
+                                            
     thrust::device_vector<value_t> time_delays_D = time_delays_H;	CUERR
     thrust::device_vector<value_t> phis_D = phis_H;
     thrust::device_vector<value_t> frequencies_D(samples[0].frequency.begin(),
@@ -325,7 +329,7 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
 
     thrust::complex<value_t>* samples_dev = thrust::raw_pointer_cast(samples_D.data());
     value_t* rec_dev = thrust::raw_pointer_cast(reconstructed_D.data());
-    value_t* coords_dev = thrust::raw_pointer_cast(coords_D.data());
+    //value_t* coords_dev = thrust::raw_pointer_cast(coords_D.data());
     value_t* time_delays_dev = thrust::raw_pointer_cast(time_delays_D.data());
 	value_t* phis_dev = thrust::raw_pointer_cast(phis_D.data());
 	value_t* frequencies_dev = thrust::raw_pointer_cast(frequencies_D.data());
@@ -334,28 +338,20 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
     int tasks=grid_size*grid_size*bins;
     int blocks = SDIV(tasks, threads);
 
-    std::cerr << bins << " " << grid_size << " " << N << std::endl;
 
-    TIMERSTART(KERNEL)
-    reconstruction<<<blocks, threads>>>(samples_dev,
-                                        (thrust::complex<value_t>*)grid_phase,
-                                        coords_dev, rec_dev, grid.R,
-                                        bins, grid_size, N);   CUERR
-    TIMERSTOP(KERNEL)
+    //~ TIMERSTART(KERNEL)
+    //~ reconstruction<<<blocks, threads>>>(samples_dev,
+                                        //~ (thrust::complex<value_t>*)grid_phase,
+                                        //~ coords_dev, rec_dev, grid.R,
+                                        //~ bins, grid_size, N);   CUERR
+    //~ TIMERSTOP(KERNEL)
     
     TIMERSTART(KERNEL_RED)
     reconstruction_red<<<blocks, threads>>>(samples_dev,
                                         frequencies_dev, time_delays_dev,
-                                        phis_dev, coords_dev, rec_dev, grid.R,
+                                        phis_dev, rec_dev, grid.R,
                                         wmix, bins, grid_size, N);   CUERR
     TIMERSTOP(KERNEL_RED)
-    
-    //~ TIMERSTART(KERNEL_RED2)
-    //~ reconstruction_red2<<<blocks, threads>>>(samples_dev,
-                                        //~ frequencies_dev,
-                                        //~ coords_dev, rec_dev, grid.R,
-                                        //~ wmix, bins, grid_size, N);   CUERR
-    //~ TIMERSTOP(KERNEL_RED2)
 
     //copy back result
     TIMERSTART(COPY_BACK)
