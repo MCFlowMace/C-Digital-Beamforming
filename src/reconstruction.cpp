@@ -30,17 +30,22 @@
 #include <limits>
 
 template <typename value_t>
-Reconstruction<value_t>::Reconstruction(int grid_size, arma::Col<value_t> frequency,
+Reconstruction<value_t>::Reconstruction(int grid_size, int buffer_size,
+						arma::Col<value_t> frequency,
                         const Antenna_Array<value_t>& array):
 grid_size(grid_size),
 grid(grid_size),
 frequency(frequency),
-reconstructed(frequency.n_elem, grid_size, grid_size)
+reconstructed(frequency.n_elem*buffer_size, grid_size, grid_size)
 {
     //frequency = sample.frequency;
     //reconstructed(frequency.n_elem, grid_size, grid_size);
     grid_phase=nullptr;
     set_antenna_array(array);
+    
+#ifdef USE_GPU
+	init_gpu();
+#endif
 
 }
 
@@ -48,6 +53,9 @@ template <typename value_t>
 Reconstruction<value_t>::~Reconstruction()
 {
     free_grid_phase();
+#ifdef USE_GPU
+    free_gpu();
+#endif
 }
 
 template <typename value_t>

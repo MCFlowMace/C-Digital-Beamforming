@@ -59,7 +59,7 @@ class Simulation{
         Simulation(Simulation_Settings<value_t> settings);
 
         std::vector<std::vector<Data_Packet<value_t>>> observation(value_t t_start,
-                                                        value_t t_end);
+                                                        int n_packets);
 
         arma::Mat<value_t> w_mat;
 

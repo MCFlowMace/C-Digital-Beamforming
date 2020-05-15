@@ -66,39 +66,50 @@ int main(int argc, char **argv)
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    int n_packets = std::atoi(argv[4]);
+    int total_packets = std::atoi(argv[4]);
 
-    settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
+    settings.run_duration = total_packets*settings.n_samples/settings.sample_rate;
+    float dt = 1/settings.sample_rate;
 
     Simulation<float> sim(settings);
-
-    TIMERSTART(SAMPLE)
-    std::vector<std::vector<Data_Packet<float>>> data_out = sim.observation(0.0, n_packets*settings.n_samples/settings.sample_rate);
-    TIMERSTOP(SAMPLE)
-
-    std::vector<bool> truth(data_out[0].size());
-
-    for(int i=0; i<truth.size(); ++i) {
-        truth[i]=false;
-        for(int j=i*settings.n_samples; j<(i+1)*settings.n_samples; ++j) {
-           // std::cout << i << " " << j << " " << sim.w_mat.n_rows << " " << truth.size() << std::endl;
-            if(sim.w_mat(j,0)!=0.0) {
-                truth[i]=true;
-                break;
-            }
-        }
-    }
-
-    n_packets = data_out[0].size();
-
     Antenna_Array<float> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
+    arma::Col<float> frequency = Data_Packet<float>::get_frequency(settings.n_samples, dt);
 
-    Reconstruction<float> rec(grid_size, data_out[0][0].frequency, array);
+    int n_packets = 1000;
 
+    Reconstruction<float> rec(grid_size, n_packets, frequency, array);
+
+    int packet = 0;
+    while(packet<total_packets) {
+		float t_start = packet*settings.n_samples*dt;
+		//fprintf(stderr,"t_start: %18.15f\n", t_start);
+		TIMERSTART(SAMPLE)
+		std::vector<std::vector<Data_Packet<float>>> data = sim.observation(t_start,n_packets);
+		TIMERSTOP(SAMPLE)
+		packet+=n_packets;
+		
+		std::vector<bool> truth(n_packets);
+
+		TIMERSTART(GET_TRUTH)
+		for(int i=0; i<truth.size(); ++i) {
+			truth[i]=false;
+			for(int j=i*settings.n_samples; j<(i+1)*settings.n_samples; ++j) {
+			   // std::cout << i << " " << j << " " << sim.w_mat.n_rows << " " << truth.size() << std::endl;
+				if(sim.w_mat(j,0)!=0.0) {
+					truth[i]=true;
+					break;
+				}
+			}
+		}
+		TIMERSTOP(GET_TRUTH)
+		
+		rec.run(data);
+	}
+
+/*
     std::vector<float> test_vals;
 
     for(int j=0; j<n_packets; ++j) {
-        //std::cout << j << std::endl;
 
         std::vector<Data_Packet<float>> data_in;
 
@@ -106,7 +117,7 @@ int main(int argc, char **argv)
             data_in.push_back(data_out[i][j]);
 
         rec.run(data_in);
-
+		
         unsigned int index_max = rec.get_max_bin();
         float val_max = rec.get_max_val(index_max);
         test_vals.push_back(val_max);
@@ -128,18 +139,21 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
 
     float threshold=0.5f;
-    while(threshold<100000.0f) {
-
+    while(threshold<1E10f) {
+		
+		//std::cerr << "collecting triggers " << threshold << std::endl;
         triggers.emplace_back(new Threshold_Trigger<float>(threshold));
-        threshold +=10.0f;
+        threshold +=1000.0f;
 
     }
 
     ROC_Evaluator<float> ev;
 
+	std::cerr << "evaluating ROC curve" << std::endl;
     arma::Mat<double> curve = ev.ROC_curve(triggers, test_vals, truth);
 
+	std::cerr << "printing" << std::endl;
     curve.t().print();
-
+*/
 }
 

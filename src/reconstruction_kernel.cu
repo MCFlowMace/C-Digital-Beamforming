@@ -135,7 +135,8 @@ template <typename value_t>
 __global__ void reconstruction_red(thrust::complex<value_t>* samples,
                                 value_t* frequencies, value_t* time_delays,
                                 value_t* phis, value_t* rec, value_t R,
-                                value_t wmix, int bins, int grid_size, int N)
+                                value_t wmix, int bins, int grid_size, int N,
+                                int packet)
 {
 	
 	/*
@@ -169,9 +170,9 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 				
 				//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
 
-                accum += samples[l*bins+k]*phase;
+                accum += samples[(packet*N+l)*bins+k]*phase;
             }
-            rec[(grid_size*i+j)*bins+k] = thrust::norm(accum);
+            rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum);
 
         }
 
@@ -259,12 +260,12 @@ void Reconstruction<value_t>::calc_phase(
 template <typename value_t>
 void Reconstruction<value_t>::set_grid_phase(std::complex<value_t>** grid_phase)
 {
-    cudaMalloc(&(this->grid_phase),
-        N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>)); CUERR
+    //~ cudaMalloc(&(this->grid_phase),
+        //~ N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>)); CUERR
 
-    cudaMemcpy(this->grid_phase, *grid_phase,
-        N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>),
-        H2D);                           CUERR
+    //~ cudaMemcpy(this->grid_phase, *grid_phase,
+        //~ N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>),
+        //~ H2D);                           CUERR
 }
 
 template <typename value_t>
@@ -277,27 +278,13 @@ void Reconstruction<value_t>::free_grid_phase()
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& samples)
+void Reconstruction<value_t>::init_gpu()
 {
 
-
-    TIMERSTART(REC)
-
-    int bins = samples[0].frequency.n_elem;
-
-    //reorder data
-    thrust::host_vector<thrust::complex<value_t> > samples_H(N*bins, thrust::complex<value_t>(0,1));   CUERR
     thrust::host_vector<value_t> time_delays_H(N*grid_size*grid_size);	CUERR
     thrust::host_vector<value_t> phis_H(N*grid_size*grid_size);			CUERR
 
-    TIMERSTART(COPY_CPU)
-    for(int i=0; i<samples.size(); ++i) {
-        thrust::copy(samples[i].frequency_data.begin(),
-                        samples[i].frequency_data.end(),
-                        samples_H.begin()+i*bins);                      CUERR
-    }
-    
-    for(int i=0; i<N; ++i) {
+	for(int i=0; i<N; ++i) {
 		arma::Mat<value_t> mat_delay= grid_time_delays[i].t();
 		arma::Mat<value_t> mat_phi = grid_phis[i].t();
 		thrust::copy(mat_delay.begin(),mat_delay.end(),
@@ -305,10 +292,97 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
 		thrust::copy(mat_phi.begin(),mat_phi.end(),
 					phis_H.begin()+i*grid_size*grid_size);		CUERR
 	}
+	
+								
+	cudaMalloc(&(this->frequencies_dev), frequency.n_elem*sizeof(value_t)); CUERR
+
+	cudaMalloc(&(this->time_delays_dev), N*grid_size*grid_size*sizeof(value_t)); CUERR
+
+	cudaMalloc(&(this->phis_dev), N*grid_size*grid_size*sizeof(value_t)); CUERR
+
+	
+	//cudaMemcpy(dev_test, test.data(), test.size(), H2D);		CUERR
+	
+	std::cerr << "copy2" << std::endl;
+	//~ thrust::copy(time_delays_H.begin(), time_delays_H.end(), 
+											//~ this->time_delays_dev);		CUERR
+	cudaMemcpy(this->time_delays_dev, time_delays_H.data(), 
+										time_delays_H.size(), H2D);		CUERR
+	
+	std::cerr << "copy3" << std::endl;				
+	//~ thrust::copy(phis_H.begin(), phis_H.end(), 
+											//~ this->phis_dev);		CUERR
+											
+	cudaMemcpy(this->phis_dev, phis_H.data(), 
+										phis_H.size(), H2D);		CUERR
+	
+	std::cerr << "copy1" << std::endl;
+	//~ thrust::copy(this->frequency.begin(),this->frequency.end(), 
+											//~ this->frequencies_dev);		CUERR
+											
+	cudaMemcpy(this->frequencies_dev, this->frequency.memptr(), 
+										this->frequency.size(), H2D);		CUERR
+}
+
+#define FREE(pointer) \
+    do { \
+		if(pointer) { \
+			cudaFree(pointer); \
+			CUERR \
+			pointer=nullptr; \
+		} \
+    } while (false)  
+
+template <typename value_t>
+void Reconstruction<value_t>::free_gpu()
+{
+	FREE(grid_phase);
+	FREE(frequencies_dev);
+	FREE(time_delays_dev);
+	FREE(phis_dev);
+}
+
+template <typename value_t>
+void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)
+{
+	std::cerr << "run" << std::endl;
+
+    TIMERSTART(REC)
+
+    int bins = samples[0][0].frequency.n_elem;
+    int n_packets = samples[0].size();
+    std::cerr << "packets: " << n_packets << " antennas: " << samples.size() << std::endl;
+    std::cerr << samples.size() << " " << samples[0].size() << std::endl;
+    
+    
+    //~ for(int j=0; j<n_packets; ++j) {
+
+        //~ std::vector<Data_Packet<float>> data_in;
+
+        //~ for(int i=0; i<data_out.size(); ++i)
+            //~ data_in.push_back(data_out[i][j]);
+
+    //~ }
+
+    //reorder data
+    thrust::host_vector<thrust::complex<value_t> > samples_H(n_packets*N*bins, 
+										thrust::complex<value_t>(0,1));   CUERR
+										
+	std::cerr << "Copy CPU" << std::endl;
+    TIMERSTART(COPY_CPU)
+    for(int j=0; j<n_packets; ++j) {
+		for(int i=0; i<N; ++i) {
+			//std::cerr << i << " " << j << " " << samples[i][j].frequency_data[0] << std::endl;
+			thrust::copy(samples[i][j].frequency_data.begin(),
+							samples[i][j].frequency_data.end(),
+							samples_H.begin()+(j*N+i)*bins);                      CUERR
+		}
+	}
     //time_delays[(l*grid_size+j)*grid_size+i]
     TIMERSTOP(COPY_CPU)
 
     //copy data to GPU
+    std::cerr << "Copy GPU" << std::endl;
     TIMERSTART(COPY_GPU)
     thrust::device_vector<thrust::complex<value_t> > samples_D = samples_H;  CUERR
                                                             //(
@@ -318,21 +392,18 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
     //thrust::device_vector<value_t> coords_D(grid.coords.begin(),
     //                                        grid.coords.end());         CUERR
                                             
-    thrust::device_vector<value_t> time_delays_D = time_delays_H;	CUERR
-    thrust::device_vector<value_t> phis_D = phis_H;
-    thrust::device_vector<value_t> frequencies_D(samples[0].frequency.begin(),
-												samples[0].frequency.end());	CUERR
+
     TIMERSTOP(COPY_GPU)
 
-    thrust::device_vector<value_t> reconstructed_D(grid_size*grid_size*bins);
+    thrust::device_vector<value_t> reconstructed_D(grid_size*grid_size*bins*n_packets);
     thrust::fill(reconstructed_D.begin(), reconstructed_D.end(), value_t(-1));
 
     thrust::complex<value_t>* samples_dev = thrust::raw_pointer_cast(samples_D.data());
     value_t* rec_dev = thrust::raw_pointer_cast(reconstructed_D.data());
     //value_t* coords_dev = thrust::raw_pointer_cast(coords_D.data());
-    value_t* time_delays_dev = thrust::raw_pointer_cast(time_delays_D.data());
-	value_t* phis_dev = thrust::raw_pointer_cast(phis_D.data());
-	value_t* frequencies_dev = thrust::raw_pointer_cast(frequencies_D.data());
+    //~ value_t* time_delays_dev = thrust::raw_pointer_cast(time_delays_D.data());
+	//~ value_t* phis_dev = thrust::raw_pointer_cast(phis_D.data());
+	//~ value_t* frequencies_dev = thrust::raw_pointer_cast(frequencies_D.data());
 	
     int threads = 512;
     int tasks=grid_size*grid_size*bins;
@@ -346,12 +417,17 @@ void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& sampl
                                         //~ bins, grid_size, N);   CUERR
     //~ TIMERSTOP(KERNEL)
     
-    TIMERSTART(KERNEL_RED)
-    reconstruction_red<<<blocks, threads>>>(samples_dev,
-                                        frequencies_dev, time_delays_dev,
-                                        phis_dev, rec_dev, grid.R,
-                                        wmix, bins, grid_size, N);   CUERR
-    TIMERSTOP(KERNEL_RED)
+    TIMERSTART(KERNELS)
+    for(int packet=0; packet<n_packets; ++packet) {
+		std::cerr << packet << std::endl;
+		TIMERSTART(KERNEL_RED)
+		reconstruction_red<<<blocks, threads>>>(samples_dev,
+											frequencies_dev, time_delays_dev,
+											phis_dev, rec_dev, grid.R,
+											wmix, bins, grid_size, N, packet);   CUERR
+		TIMERSTOP(KERNEL_RED)
+	}
+	TIMERSTOP(KERNELS)
 
     //copy back result
     TIMERSTART(COPY_BACK)

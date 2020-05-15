@@ -62,7 +62,7 @@ void Simulation<value_t>::fill_w_mat()
 
 template <typename value_t>
 std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
-                                                value_t t_start, value_t t_end)
+                                                value_t t_start, int n_packets)
 {
 
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr,
@@ -70,18 +70,13 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
 
     std::vector<std::vector<Data_Packet<value_t>>> data(settings.N);
 
-    //std::cout << "sample_rate: " << settings.sample_rate << " t_end " << t_end << std::endl;
-
     value_t dt = 1/settings.sample_rate;
-    value_t delta_t = t_end-t_start;
-    int samples = (int) (delta_t*settings.sample_rate);
-    int n_packets = samples/settings.n_samples; //only take full packets of data
+    //value_t delta_t = t_end-t_start;
+    //int samples = (int) (delta_t*settings.sample_rate);
+    //int n_packets = samples/settings.n_samples; //only take full packets of data
     //SDIV(samples, settings.n_samples);
 
-    //std::cerr << "delta_t " << delta_t << " run time " << settings.run_duration << std::endl;
-    std::cerr << "samples: " << samples << " n_packets: " << n_packets << std::endl;
-
-#ifdef PARALLEL
+#if defined PARALLEL || defined USE_GPU
     #pragma omp parallel
     {
         //std::cout << "threads: " << omp_get_num_threads() << std::endl;
@@ -96,16 +91,19 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
             //data_i[j] = array.antennas[i].sample_data(samples, t, this->events);
             //data_i.push_back(std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events)));
             data_i[j] = std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events));
-            t+=dt*settings.n_samples;
             //std::cout << "i, j " << i << ", " << j << std::endl;
+            t=t_start+(j+1)*dt*settings.n_samples;
         }
         //std::cout << "addr observation: " << &data_i[0].time_data[0] << std::endl;
         //data.push_back(data_i);
         data[i] = std::move(data_i);
         //std::cout << "addr observation 2: " << &data[i][0].time_data[0] << std::endl;
+        
+        //if(i==0)
+		//	fprintf(stderr,"last t: %18.15f next t: %18.15f\n", t, t+dt);
     }
 
-#ifdef PARALLEL
+#if defined PARALLEL || defined USE_GPU
     }
 #endif
 

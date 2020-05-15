@@ -38,7 +38,8 @@ class Reconstruction {
 
         //arma::field<arma::Cube<std::complex<value_t>>> grid_phase;
 
-        Reconstruction(int grid_size, arma::Col<value_t> frequency,
+        Reconstruction(int grid_size, int buffersize,
+						arma::Col<value_t> frequency,
                         const Antenna_Array<value_t>& array);
 
         ~Reconstruction();
@@ -46,7 +47,7 @@ class Reconstruction {
         Reconstruction(const Reconstruction& temp_obj) = delete;
         Reconstruction& operator=(const Reconstruction& temp_obj) = delete;
 
-        void run(const std::vector<Data_Packet<value_t>>& samples);
+        void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples);
 
         arma::Mat<value_t> get_img(unsigned int bin);
 
@@ -76,5 +77,13 @@ class Reconstruction {
         
         std::vector<arma::Mat<value_t>> grid_time_delays;
         std::vector<arma::Mat<value_t>> grid_phis;
+        
+#ifdef USE_GPU
+        value_t* time_delays_dev;
+        value_t* phis_dev;
+        value_t* frequencies_dev;
+        void init_gpu();
+        void free_gpu();
+#endif
 };
 

@@ -37,7 +37,21 @@ time_data(std::move(time_data))
     n_samples=this->time.n_elem;
     timestep=this->time[1]-this->time[0];
 
-    int upper, lower;
+	frequency=get_frequency(n_samples, timestep);
+	
+	int upper = frequency.n_elem;
+
+    arma::Col<std::complex<value_t>> fft = arma::fft(this->time_data);
+
+    frequency_data = fft.subvec(1,upper+1);
+    //frequency_data = fft;
+
+}
+
+template <typename value_t>
+arma::Col<value_t> Data_Packet<value_t>::get_frequency(int n_samples, value_t dt) {
+	
+	int upper, lower;
 
     if(!(n_samples%2)) {
         lower=-n_samples/2;
@@ -47,19 +61,12 @@ time_data(std::move(time_data))
         upper=(n_samples-1)/2;
     }
 
-    frequency = arma::Col<value_t>(upper);
+    arma::Col<value_t> _frequency(upper);
 
-    for(int i=0; i<upper; ++i) {
+    for(int i=0; i<upper; ++i)
+        _frequency[i] = (i+1)/(dt*n_samples);
 
-        frequency[i] = (i+1)/(timestep*n_samples);
-
-    }
-
-    arma::Col<std::complex<value_t>> fft = arma::fft(this->time_data);
-
-    frequency_data = fft.subvec(1,upper+1);
-    //frequency_data = fft;
-
+	return _frequency;
 }
 
 DEFINE_TEMPLATES(Data_Packet)

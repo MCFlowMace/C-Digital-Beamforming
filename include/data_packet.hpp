@@ -35,6 +35,8 @@ class Data_Packet {
 
         arma::Col<std::complex<value_t>> frequency_data;
         arma::Col<value_t> frequency;
+        
+        static arma::Col<value_t> get_frequency(int n_samples, value_t dt);
 
         arma::Col<value_t> time;
 
