@@ -32,6 +32,7 @@ typedef unsigned long long int uint64_cu;
 				  << #label << std::endl;
         //~ std::cerr << "# elapsed time ("<< #label <<"): "                       \
                   //~ << delta##label.count()  << "s" << std::endl;
+
 #else
     #define TIMERSTOP(label)                                                   \
             cudaEventRecord(stop##label, 0);                                   \
@@ -39,6 +40,17 @@ typedef unsigned long long int uint64_cu;
             cudaEventElapsedTime(&time##label, start##label, stop##label);     \
             std::cerr << "TIMING: " << time##label << " ms "  				   \
                       << #label << std::endl;
+	
+	#define TIMERBW(memsize, label)											   \
+			cudaEventRecord(stop##label, 0);                                   \
+            cudaEventSynchronize(stop##label);                                 \
+            cudaEventElapsedTime(&time##label, start##label, stop##label);     \
+            std::cerr << "TIMING: " << time##label << " ms "  				   \
+                      << #label << std::endl;								   \
+			double bandwidth##label = (double) memsize / (double)1e9;		   \
+			bandwidth##label = bandwidth##label / (time##label*1e-3);          \
+			std::cerr << "BANDWIDTH: " << bandwidth##label << " GB/s "		   \
+                      << #label << std::endl;	
 #endif
 
 

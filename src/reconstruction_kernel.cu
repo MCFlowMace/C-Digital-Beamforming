@@ -369,6 +369,7 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
 										thrust::complex<value_t>(0,1));   CUERR
 										
 	std::cerr << "Copy CPU" << std::endl;
+	size_t memSize=sizeof(thrust::complex<value_t>)*n_packets*N*bins;
     TIMERSTART(COPY_CPU)
     for(int j=0; j<n_packets; ++j) {
 		for(int i=0; i<N; ++i) {
@@ -379,9 +380,11 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
 		}
 	}
     //time_delays[(l*grid_size+j)*grid_size+i]
-    TIMERSTOP(COPY_CPU)
+    //TIMERSTOP(COPY_CPU)
+    TIMERBW(memSize, COPY_CPU)
 
     //copy data to GPU
+    
     std::cerr << "Copy GPU" << std::endl;
     TIMERSTART(COPY_GPU)
     thrust::device_vector<thrust::complex<value_t> > samples_D = samples_H;  CUERR
@@ -393,7 +396,8 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
     //                                        grid.coords.end());         CUERR
                                             
 
-    TIMERSTOP(COPY_GPU)
+    //TIMERSTOP(COPY_GPU)
+    TIMERBW(memSize, COPY_GPU)
 
     thrust::device_vector<value_t> reconstructed_D(grid_size*grid_size*bins*n_packets);
     thrust::fill(reconstructed_D.begin(), reconstructed_D.end(), value_t(-1));
@@ -430,10 +434,12 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
 	TIMERSTOP(KERNELS)
 
     //copy back result
+    size_t memsize_res = grid_size*grid_size*bins*n_packets*sizeof(value_t);
     TIMERSTART(COPY_BACK)
     thrust::copy(reconstructed_D.begin(), reconstructed_D.end(),
                     reconstructed.begin());                             CUERR
-	TIMERSTOP(COPY_BACK)
+	//TIMERSTOP(COPY_BACK)
+	TIMERBW(memsize_res, COPY_BACK)
 
     TIMERSTOP(REC)
 }
