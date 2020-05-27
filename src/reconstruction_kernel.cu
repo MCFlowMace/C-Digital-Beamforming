@@ -365,8 +365,11 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
     //~ }
 
     //reorder data
-    thrust::host_vector<thrust::complex<value_t> > samples_H(n_packets*N*bins, 
-										thrust::complex<value_t>(0,1));   CUERR
+    //thrust::host_vector<thrust::complex<value_t> > samples_H(n_packets*N*bins, 
+	//									thrust::complex<value_t>(0,1));   CUERR
+	
+	thrust::complex<value_t>* samples_H;
+	cudaMallocHost(&samples_H, n_packets*N*bins*sizeof(thrust::complex<value_t>));	CUERR
 										
 	std::cerr << "Copy CPU" << std::endl;
 	size_t memSize=sizeof(thrust::complex<value_t>)*n_packets*N*bins;
@@ -376,7 +379,8 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
 			//std::cerr << i << " " << j << " " << samples[i][j].frequency_data[0] << std::endl;
 			thrust::copy(samples[i][j].frequency_data.begin(),
 							samples[i][j].frequency_data.end(),
-							samples_H.begin()+(j*N+i)*bins);                      CUERR
+							//samples_H.begin()+(j*N+i)*bins);                      CUERR
+							samples_H+(j*N+i)*bins);                      CUERR
 		}
 	}
     //time_delays[(l*grid_size+j)*grid_size+i]
@@ -387,7 +391,10 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
     
     std::cerr << "Copy GPU" << std::endl;
     TIMERSTART(COPY_GPU)
-    thrust::device_vector<thrust::complex<value_t> > samples_D = samples_H;  CUERR
+    //thrust::device_vector<thrust::complex<value_t> > samples_D = samples_H;  CUERR
+    
+    thrust::device_vector<thrust::complex<value_t> > samples_D(n_packets*N*bins);	CUERR
+    thrust::copy(samples_H, samples_H+n_packets*N*bins, samples_D.begin());                 CUERR
                                                             //(
                                                             //samples_H.begin(),
                                                             //samples_H.end()); CUERR
@@ -440,6 +447,8 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
                     reconstructed.begin());                             CUERR
 	//TIMERSTOP(COPY_BACK)
 	TIMERBW(memsize_res, COPY_BACK)
+	
+	cudaFreeHost(samples_H);		CUERR
 
     TIMERSTOP(REC)
 }
