@@ -21,60 +21,66 @@
  *
  */
 
+/*
+
 #pragma once
 
 #include <armadillo>
 #include "antenna_array.hpp"
 #include "grid.hpp"
 #include "hpc_helpers.hpp"
+#include "reconstruction.hpp"
 
 template <typename value_t>
-class Reconstruction {
+class Reconstruction_CPU : public Reconstruction<value_t> {
 
 
     public:
 
-        Reconstruction(int grid_size, int n_packets,
+        //arma::Mat<value_t> img;
+
+        //arma::field<arma::Cube<std::complex<value_t>>> grid_phase;
+
+        Reconstruction(int grid_size, int buffersize,
 						arma::Col<value_t> frequency,
                         const Antenna_Array<value_t>& array);
 
-
-        //~Reconstruction();
+        ~Reconstruction();
 
         Reconstruction(const Reconstruction& temp_obj) = delete;
         Reconstruction& operator=(const Reconstruction& temp_obj) = delete;
 
-        virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
-        virtual arma::Mat<value_t> get_img(unsigned int bin)=0;
-        virtual unsigned int get_max_bin()=0;
-        
+        void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples);
+
+        arma::Mat<value_t> get_img(unsigned int bin);
+
+        unsigned int get_max_bin();
         value_t get_max_val(unsigned int bin);
         value_t get_mean_val(unsigned int bin);
 
-    protected:
-	
+        arma::Cube<value_t> reconstructed;
+
+    private:
+
+        void set_antenna_array(const Antenna_Array<value_t>& array);
+        void set_grid_phase(std::complex<value_t>** grid_phase);
+        void calc_phase(const std::vector<arma::Mat<value_t>>& grid_time_delays,
+                        const std::vector<arma::Mat<value_t>>& grid_phis,
+                        std::complex<value_t>* const grid_phase);
+        void free_grid_phase();
+
         int grid_size;
         Grid<value_t> grid;
         int N;
         value_t R;
         value_t wmix;
-        int n_packets;
-        int bins;
 
+        std::complex<value_t>* grid_phase;
         arma::Col<value_t> frequency;
         
         std::vector<arma::Mat<value_t>> grid_time_delays;
         std::vector<arma::Mat<value_t>> grid_phis;
-    
-    private:
-
-        void set_antenna_array(const Antenna_Array<value_t>& array);
-      //  void set_grid_phase(std::complex<value_t>** grid_phase);
-      //  void calc_phase(const std::vector<arma::Mat<value_t>>& grid_time_delays,
-      //                  const std::vector<arma::Mat<value_t>>& grid_phis,
-      //                  std::complex<value_t>* const grid_phase);
-      //  void free_grid_phase();
-		
         
 };
 
+*/

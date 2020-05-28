@@ -20,24 +20,20 @@
  *
  *
  */
+#include <stdexcept>
 
+#include <thrust/complex.h>
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
-#include <thrust/complex.h>
-#include <thrust/device_ptr.h>
 
 #include "hpc_helpers.hpp"
 #include "data_packet.hpp"
-#include "reconstruction.hpp"
+#include "reconstruction_gpu.hpp"
+#include "utility_macros.hpp"
 
 //speed of light in cm/s
-#define SPEED_OF_LIGHT 29979245800 
+#define SPEED_OF_LIGHT 29979245800
 
-
-#ifdef USE_GPU
-
-//not very nice solution
-#include "../src/reconstruction.cpp"
 
 template <typename value_t>
 __global__ void reconstruction(thrust::complex<value_t>* samples,
@@ -145,12 +141,14 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 	 * */
 	
     int tid = blockDim.x*blockIdx.x+threadIdx.x;
+    
+    //printf("id: %d\n", tid);
 
     if(tid<grid_size*grid_size*bins) {
 		
-		int k = tid%bins;
-        int i = (tid/bins)%grid_size;
-        int j = tid/(bins*grid_size);
+		int k = tid%bins; //frequency
+        int i = (tid/bins)%grid_size; //y
+        int j = tid/(bins*grid_size); //x
 
         value_t x = (-1+(value_t)(2*j+1)/grid_size)*R; //coords[j];
         value_t y = (-1+(value_t)(2*i+1)/grid_size)*R; //coords[i];
@@ -230,7 +228,30 @@ __global__ void reconstruction_red2(thrust::complex<value_t>* samples,
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::calc_phase(
+Reconstruction_GPU<value_t>::Reconstruction_GPU(int grid_size, int n_packets,
+						arma::Col<value_t> frequency,
+						const Antenna_Array<value_t>& array):
+Reconstruction<value_t>(grid_size, n_packets, frequency, array)
+{
+	init_gpu();
+}
+
+template <typename value_t>
+Reconstruction_GPU<value_t>::~Reconstruction_GPU()
+{
+	FREE_CUDA(frequencies_D);
+	FREE_CUDA(time_delays_D);
+	FREE_CUDA(phis_D);
+	FREE_CUDA(samples_D);
+	FREE_CUDA(reconstructed_D);
+	
+	FREE_HOST(samples_H);
+	FREE_HOST(reconstructed_H);
+}
+
+/*
+template <typename value_t>
+void Reconstruction_GPU<value_t>::calc_phase(
                         const std::vector<arma::Mat<value_t>>& grid_time_delays,
                         const std::vector<arma::Mat<value_t>>& grid_phis,
                         std::complex<value_t>* const grid_phase)
@@ -255,171 +276,184 @@ void Reconstruction<value_t>::calc_phase(
             }
         }
     }
+} */
+
+template <typename value_t>
+unsigned int Reconstruction_GPU<value_t>::get_max_bin()
+{
+	
+	int bins = this->bins;
+	int grid_size = this->grid_size;
+
+	value_t max_val = std::numeric_limits<value_t>::min();
+	unsigned int index;
+	int packet = 0;
+	for(unsigned int i=0; i<bins; ++i) {
+		for(unsigned int j=0; j<grid_size; ++j) {
+			for(unsigned int l=0; l<grid_size; ++l) {
+				
+				value_t val = reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i];
+				if(val>max_val) {
+					max_val=val;
+					index = i;
+				}
+			}
+		}
+	}
+
+	std::cerr << "Max frequency: " << this->frequency[index] << std::endl;
+
+	return index;
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::set_grid_phase(std::complex<value_t>** grid_phase)
+void Reconstruction_GPU<value_t>::init_gpu()
 {
-    //~ cudaMalloc(&(this->grid_phase),
-        //~ N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>)); CUERR
-
-    //~ cudaMemcpy(this->grid_phase, *grid_phase,
-        //~ N*grid_size*grid_size*frequency.n_elem*sizeof(std::complex<value_t>),
-        //~ H2D);                           CUERR
-}
-
-template <typename value_t>
-void Reconstruction<value_t>::free_grid_phase()
-{
-    if(grid_phase) {
-        cudaFree(grid_phase);   CUERR
-        grid_phase=nullptr;
-    }
-}
-
-template <typename value_t>
-void Reconstruction<value_t>::init_gpu()
-{
+	
+	std::cerr << "init" << std::endl;
+	
+	int N = this->N;
+	int bins = this->bins;
+	int n_packets = this->n_packets;
+	int grid_size = this->grid_size;
 
     thrust::host_vector<value_t> time_delays_H(N*grid_size*grid_size);	CUERR
     thrust::host_vector<value_t> phis_H(N*grid_size*grid_size);			CUERR
 
 	for(int i=0; i<N; ++i) {
-		arma::Mat<value_t> mat_delay= grid_time_delays[i].t();
-		arma::Mat<value_t> mat_phi = grid_phis[i].t();
+		arma::Mat<value_t> mat_delay= this->grid_time_delays[i].t();
+		arma::Mat<value_t> mat_phi = this->grid_phis[i].t();
 		thrust::copy(mat_delay.begin(),mat_delay.end(),
 					time_delays_H.begin()+i*grid_size*grid_size);		CUERR
 		thrust::copy(mat_phi.begin(),mat_phi.end(),
-					phis_H.begin()+i*grid_size*grid_size);		CUERR
+					phis_H.begin()+i*grid_size*grid_size);				CUERR
 	}
 	
-								
-	cudaMalloc(&(this->frequencies_dev), frequency.n_elem*sizeof(value_t)); CUERR
+	cudaMallocHost(&(this->samples_H), 
+				n_packets*N*bins*sizeof(thrust::complex<value_t>));		CUERR
+	cudaMallocHost(&(this->reconstructed_H), 
+				grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
+				
+	cudaMalloc(&(this->samples_D), 
+				n_packets*N*bins*sizeof(thrust::complex<value_t>));		CUERR
+	cudaMalloc(&(this->reconstructed_D), 
+				grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
+				
+	cudaMalloc(&(this->frequencies_D), bins*sizeof(value_t)); 			CUERR
+	cudaMalloc(&(this->time_delays_D), 
+					N*grid_size*grid_size*sizeof(value_t)); 			CUERR
+	cudaMalloc(&(this->phis_D), N*grid_size*grid_size*sizeof(value_t)); CUERR
 
-	cudaMalloc(&(this->time_delays_dev), N*grid_size*grid_size*sizeof(value_t)); CUERR
 
-	cudaMalloc(&(this->phis_dev), N*grid_size*grid_size*sizeof(value_t)); CUERR
-
-	
-	//cudaMemcpy(dev_test, test.data(), test.size(), H2D);		CUERR
-	
-	std::cerr << "copy2" << std::endl;
-	//~ thrust::copy(time_delays_H.begin(), time_delays_H.end(), 
-											//~ this->time_delays_dev);		CUERR
-	cudaMemcpy(this->time_delays_dev, time_delays_H.data(), 
-										time_delays_H.size(), H2D);		CUERR
-	
-	std::cerr << "copy3" << std::endl;				
-	//~ thrust::copy(phis_H.begin(), phis_H.end(), 
-											//~ this->phis_dev);		CUERR
-											
-	cudaMemcpy(this->phis_dev, phis_H.data(), 
-										phis_H.size(), H2D);		CUERR
-	
-	std::cerr << "copy1" << std::endl;
-	//~ thrust::copy(this->frequency.begin(),this->frequency.end(), 
-											//~ this->frequencies_dev);		CUERR
-											
-	cudaMemcpy(this->frequencies_dev, this->frequency.memptr(), 
-										this->frequency.size(), H2D);		CUERR
+	cudaMemcpy(this->time_delays_D, time_delays_H.data(), 
+						time_delays_H.size()*sizeof(value_t), H2D);		CUERR									
+	cudaMemcpy(this->phis_D, phis_H.data(), 
+						phis_H.size()*sizeof(value_t), H2D);			CUERR						
+	cudaMemcpy(this->frequencies_D, this->frequency.memptr(), 
+						this->frequency.size()*sizeof(value_t), H2D);	CUERR
 }
 
-#define FREE(pointer) \
-    do { \
-		if(pointer) { \
-			cudaFree(pointer); \
-			CUERR \
-			pointer=nullptr; \
-		} \
-    } while (false)  
+//~ template <typename value_t>
+//~ void Reconstruction_GPU<value_t>::free_memory()
+//~ {
+	//~ //FREE_CUDA(grid_phase_D);
+	
+	//~ FREE_CUDA(frequencies_D);
+	//~ FREE_CUDA(time_delays_D);
+	//~ FREE_CUDA(phis_D);
+	//~ FREE_CUDA(samples_D);
+	//~ FREE_CUDA(reconstructed_D);
+	
+	//~ FREE_HOST(samples_H);
+	//~ FREE_HOST(reconstructed_H);
+//~ }
 
 template <typename value_t>
-void Reconstruction<value_t>::free_gpu()
+arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int bin)
 {
-	FREE(grid_phase);
-	FREE(frequencies_dev);
-	FREE(time_delays_dev);
-	FREE(phis_dev);
+	int packet=0;
+	
+	if(bin >= this->frequency.n_elem) {
+		std::string err = "Bin " + std::to_string(bin) 
+								+ " is not a valid frequency bin!";
+		throw std::out_of_range(err);
+	}
+
+	int grid_size = this->grid_size;
+	int bins = this->bins;
+	arma::Mat<value_t> img(grid_size, grid_size);
+
+	for(int i=0; i<grid_size; ++i) {
+		for(int j=0; j<grid_size; ++j) {
+			img(j,i) = reconstructed_H[((packet*grid_size+i)*grid_size+j)*bins+bin];
+		}
+	}
+
+	return img;
 }
 
 template <typename value_t>
-void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)
+void Reconstruction_GPU<value_t>::run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)
 {
 	std::cerr << "run" << std::endl;
-
-    TIMERSTART(REC)
-
-    int bins = samples[0][0].frequency.n_elem;
-    int n_packets = samples[0].size();
-    std::cerr << "packets: " << n_packets << " antennas: " << samples.size() << std::endl;
-    std::cerr << samples.size() << " " << samples[0].size() << std::endl;
-    
-    
-    //~ for(int j=0; j<n_packets; ++j) {
-
-        //~ std::vector<Data_Packet<float>> data_in;
-
-        //~ for(int i=0; i<data_out.size(); ++i)
-            //~ data_in.push_back(data_out[i][j]);
-
-    //~ }
-
-    //reorder data
-    //thrust::host_vector<thrust::complex<value_t> > samples_H(n_packets*N*bins, 
-	//									thrust::complex<value_t>(0,1));   CUERR
+		
+	int bins_ = samples[0][0].frequency.n_elem;
+    int n_packets_ = samples[0].size();
+	int N_ = samples.size();
 	
-	thrust::complex<value_t>* samples_H;
-	cudaMallocHost(&samples_H, n_packets*N*bins*sizeof(thrust::complex<value_t>));	CUERR
-										
+	int N = this->N;
+	int bins = this->bins;
+	int n_packets = this->n_packets;
+	int grid_size = this->grid_size;
+	
+	if(N!=N_ || bins != bins_ || n_packets != n_packets_)
+        throw std::invalid_argument(
+				"'samples' input array dimension is (" + std::to_string(N_) 
+				+ "," + std::to_string(n_packets_) + "," 
+				+ std::to_string(bins_) + ") but expected dimension was ("
+				+ std::to_string(N) + "," + std::to_string(n_packets) + ","
+				+ std::to_string(bins) + ")" );
+
+	size_t rec_size = grid_size*grid_size*bins*n_packets;
+	size_t samples_size = n_packets*N*bins;
+	
+    TIMERSTART(REC)
+    								
 	std::cerr << "Copy CPU" << std::endl;
-	size_t memSize=sizeof(thrust::complex<value_t>)*n_packets*N*bins;
+	size_t memsize_samples=sizeof(thrust::complex<value_t>)*samples_size;
+
     TIMERSTART(COPY_CPU)
     for(int j=0; j<n_packets; ++j) {
 		for(int i=0; i<N; ++i) {
-			//std::cerr << i << " " << j << " " << samples[i][j].frequency_data[0] << std::endl;
-			thrust::copy(samples[i][j].frequency_data.begin(),
-							samples[i][j].frequency_data.end(),
-							//samples_H.begin()+(j*N+i)*bins);                      CUERR
-							samples_H+(j*N+i)*bins);                      CUERR
+			//thrust::copy(samples[i][j].frequency_data.begin(),
+			//				samples[i][j].frequency_data.end(),
+			//				samples_H+(j*N+i)*bins);					CUERR
+			cudaMemcpy(this->samples_H, samples[i][j].frequency_data.memptr(), 
+							bins*sizeof(thrust::complex<value_t>), H2D);CUERR
 		}
 	}
-    //time_delays[(l*grid_size+j)*grid_size+i]
     //TIMERSTOP(COPY_CPU)
-    TIMERBW(memSize, COPY_CPU)
+    TIMERBW(memsize_samples, COPY_CPU)
 
     //copy data to GPU
     
     std::cerr << "Copy GPU" << std::endl;
     TIMERSTART(COPY_GPU)
-    //thrust::device_vector<thrust::complex<value_t> > samples_D = samples_H;  CUERR
     
-    thrust::device_vector<thrust::complex<value_t> > samples_D(n_packets*N*bins);	CUERR
-    thrust::copy(samples_H, samples_H+n_packets*N*bins, samples_D.begin());                 CUERR
-                                                            //(
-                                                            //samples_H.begin(),
-                                                            //samples_H.end()); CUERR
+	cudaMemcpy(this->samples_H, this->samples_D, 
+											memsize_samples, H2D);			CUERR	
 
-    //thrust::device_vector<value_t> coords_D(grid.coords.begin(),
-    //                                        grid.coords.end());         CUERR
-                                            
 
     //TIMERSTOP(COPY_GPU)
-    TIMERBW(memSize, COPY_GPU)
-
-    thrust::device_vector<value_t> reconstructed_D(grid_size*grid_size*bins*n_packets);
-    thrust::fill(reconstructed_D.begin(), reconstructed_D.end(), value_t(-1));
-
-    thrust::complex<value_t>* samples_dev = thrust::raw_pointer_cast(samples_D.data());
-    value_t* rec_dev = thrust::raw_pointer_cast(reconstructed_D.data());
-    //value_t* coords_dev = thrust::raw_pointer_cast(coords_D.data());
-    //~ value_t* time_delays_dev = thrust::raw_pointer_cast(time_delays_D.data());
-	//~ value_t* phis_dev = thrust::raw_pointer_cast(phis_D.data());
-	//~ value_t* frequencies_dev = thrust::raw_pointer_cast(frequencies_D.data());
+    TIMERBW(memsize_samples, COPY_GPU)
+	
+	thrust::device_ptr<value_t> rec_thrust =
+									thrust::device_pointer_cast(reconstructed_D);  
+    thrust::fill(rec_thrust, rec_thrust+rec_size, value_t(-1));			CUERR
 	
     int threads = 512;
     int tasks=grid_size*grid_size*bins;
     int blocks = SDIV(tasks, threads);
-
 
     //~ TIMERSTART(KERNEL)
     //~ reconstruction<<<blocks, threads>>>(samples_dev,
@@ -428,32 +462,31 @@ void Reconstruction<value_t>::run(const std::vector<std::vector<Data_Packet<valu
                                         //~ bins, grid_size, N);   CUERR
     //~ TIMERSTOP(KERNEL)
     
+    std::cerr << "start kernel" << std::endl;
     TIMERSTART(KERNELS)
     for(int packet=0; packet<n_packets; ++packet) {
 		std::cerr << packet << std::endl;
 		TIMERSTART(KERNEL_RED)
-		reconstruction_red<<<blocks, threads>>>(samples_dev,
-											frequencies_dev, time_delays_dev,
-											phis_dev, rec_dev, grid.R,
-											wmix, bins, grid_size, N, packet);   CUERR
+		reconstruction_red<<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
+											frequencies_D, time_delays_D,
+											phis_D, reconstructed_D, this->R,
+											this->wmix, bins, grid_size, N, packet);   CUERR
 		TIMERSTOP(KERNEL_RED)
 	}
 	TIMERSTOP(KERNELS)
 
     //copy back result
-    size_t memsize_res = grid_size*grid_size*bins*n_packets*sizeof(value_t);
+    size_t memsize_res = rec_size*sizeof(value_t);
     TIMERSTART(COPY_BACK)
-    thrust::copy(reconstructed_D.begin(), reconstructed_D.end(),
-                    reconstructed.begin());                             CUERR
+    //thrust::copy(reconstructed_D.begin(), reconstructed_D.end(),
+    //                reconstructed.begin());                             CUERR
+	cudaMemcpy(this->reconstructed_H, this->reconstructed_D, 
+											memsize_res, D2H);			CUERR	
 	//TIMERSTOP(COPY_BACK)
 	TIMERBW(memsize_res, COPY_BACK)
-	
-	cudaFreeHost(samples_H);		CUERR
 
     TIMERSTOP(REC)
 }
 
-//DEFINE_TEMPLATES(Reconstruction)
-template class Reconstruction<float>;
+DEFINE_TEMPLATES(Reconstruction_GPU)
 
-#endif

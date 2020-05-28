@@ -23,39 +23,24 @@
 
 #include "reconstruction.hpp"
 #include "utility_macros.hpp"
-#include "reconstruction_kernel.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <limits>
 
 template <typename value_t>
-Reconstruction<value_t>::Reconstruction(int grid_size, int buffer_size,
+Reconstruction<value_t>::Reconstruction(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
                         const Antenna_Array<value_t>& array):
 grid_size(grid_size),
 grid(grid_size),
 frequency(frequency),
-reconstructed(frequency.n_elem*buffer_size, grid_size, grid_size)
+n_packets(n_packets),
+bins(frequency.n_elem)
 {
     //frequency = sample.frequency;
     //reconstructed(frequency.n_elem, grid_size, grid_size);
-    grid_phase=nullptr;
     set_antenna_array(array);
-    
-#ifdef USE_GPU
-	init_gpu();
-#endif
-
-}
-
-template <typename value_t>
-Reconstruction<value_t>::~Reconstruction()
-{
-    free_grid_phase();
-#ifdef USE_GPU
-    free_gpu();
-#endif
 }
 
 template <typename value_t>
@@ -86,154 +71,6 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
     
     grid_phis = grid.get_phis_for_points(coords);
 
-    //TODO needs a "free" somewhere + class needs better design with respect to this calloc
-    std::complex<value_t>* grid_phase_local = (std::complex<value_t>*)calloc(N*grid_size*grid_size*frequency.n_elem,sizeof(std::complex<value_t>));
-
-	TIMERSTART(CALC_PHASE)
-    calc_phase(grid_time_delays, grid_phis, grid_phase_local);
-	TIMERSTOP(CALC_PHASE)
-	
-    set_grid_phase(&grid_phase_local);
-
-    //data is on GPU now
-    if(grid_phase_local) {
-        free(grid_phase_local);
-        grid_phase_local=nullptr;
-    }
-
-}
-
-#ifndef USE_GPU
-template <typename value_t>
-void Reconstruction<value_t>::calc_phase(
-                        const std::vector<arma::Mat<value_t>>& grid_time_delays,
-                        const std::vector<arma::Mat<value_t>>& grid_phis,
-                        std::complex<value_t>* const grid_phase)
-{
-
-    for(int j=0; j<grid_size; ++j) {
-        for(int k=0; k<grid_size; ++k) {
-            for(int l=0; l<frequency.n_elem; ++l) {
-                for(int i=0; i<N; ++i) {
-                    value_t phi = grid_time_delays[i](k,j)*(2*M_PI*frequency(l)+wmix);
-                    phi += grid_phis[i](k,j);
-                    grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i] = std::complex<value_t>(cos(phi), sin(phi));
-
-                }
-            }
-        }
-    }
-
-}
-
-template <typename value_t>
-void Reconstruction<value_t>::set_grid_phase(std::complex<value_t>** grid_phase)
-{
-    this->grid_phase= *grid_phase;
-    *grid_phase=nullptr;
-}
-
-template <typename value_t>
-void Reconstruction<value_t>::run(const std::vector<Data_Packet<value_t>>& samples)
-{
-    //arma::Cube<value_t> reconstructed(frequency.n_elem, grid_size, grid_size);
-
-    reconstructed.ones();
-    reconstructed*=-1;
-
-    TIMERSTART(REC)
-
-#ifdef PARALLEL
-    #pragma omp parallel
-    {
-        std::cerr << "threads: " << omp_get_num_threads() << std::endl;
-        #pragma omp for
-#endif
-        for(int j=0; j<grid_size; ++j) {
-            value_t y = grid.coords(j);
-            for(int k=0; k<grid_size; ++k) {
-                value_t x = grid.coords(k);
-                value_t d = x*x+y*y;
-
-                if(d<=R*R) {
-                    for(int l=0; l<frequency.n_elem; ++l) {
-                        std::complex<value_t> accum(0);
-                        for(int i=0; i<N; ++i) {
-                            accum += samples[i].frequency_data(l)*grid_phase[((grid_size*j+k)*frequency.n_elem+l)*N+i];
-                        }
-                        reconstructed(l, k, j) = std::abs(accum);
-                    }
-                }
-            }
-        }
-#ifdef PARALLEL
-    }
-#endif
-
-    TIMERSTOP(REC)
-
-}
-
-template <typename value_t>
-void Reconstruction<value_t>::free_grid_phase()
-{
-    if(grid_phase) {
-        free(grid_phase);
-        grid_phase=nullptr;
-    }
-}
-#endif
-
-template <typename value_t>
-unsigned int Reconstruction<value_t>::get_max_bin()
-{
-
-    value_t max_val = std::numeric_limits<value_t>::min();
-    unsigned int index;
-    for(unsigned int i=0; i<frequency.n_elem; ++i) {
-        for(unsigned int j=0; j<grid_size; ++j) {
-            for(unsigned int l=0; l<grid_size; ++l) {
-
-                if(reconstructed(i,j,l)>max_val) {
-                    max_val=reconstructed(i,j,l);
-                    index = i;
-                }
-            }
-        }
-    }
-
-    std::cerr << "Max frequency: " << frequency[index] << std::endl;
-
-    return index;
-}
-
-template <typename value_t>
-arma::Mat<value_t> Reconstruction<value_t>::get_img(unsigned int bin)
-{
-    if(bin >= frequency.n_elem) {
-        std::string err = "Bin " + std::to_string(bin) + " is not a valid frequency bin!";
-        throw std::out_of_range(err);
-    }
-
-    arma::Mat<value_t> img(grid_size, grid_size);
-
-    for(int i=0; i<grid_size; ++i) {
-        //value_t y = grid.coords(i);
-
-        for(int j=0; j<grid_size; ++j) {
-            //value_t x = grid.coords(j);
-            //~ value_t d = x*x+y*y;
-
-            //~ if(d>R*R) {
-                //~ img(j,i)=-1;
-            //~ } else {
-                //~ img(j,i) = reconstructed(bin, j, i);
-            //~ }
-            img(j,i) = reconstructed(bin, j, i);
-        }
-    }
-
-    return img;
 }
 
 template <typename value_t>
@@ -282,6 +119,4 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin)
     return max_val;
 }
 
-#ifndef USE_GPU
 DEFINE_TEMPLATES(Reconstruction)
-#endif
