@@ -44,7 +44,8 @@ class Reconstruction {
         Reconstruction(const Reconstruction& temp_obj) = delete;
         Reconstruction& operator=(const Reconstruction& temp_obj) = delete;
 
-        virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
+        //virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
+        virtual void run(const std::vector<std::complex<value_t>>& samples)=0;
         virtual arma::Mat<value_t> get_img(unsigned int bin)=0;
         virtual unsigned int get_max_bin()=0;
         

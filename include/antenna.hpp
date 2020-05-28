@@ -39,7 +39,9 @@ class Antenna {
         Antenna(value_t snr, value_t sample_rate, value_t wmix,
                 value_t x, value_t y);
 
-        Data_Packet<value_t> sample_data(int n_samples, value_t t0,
+        Data_Packet<value_t> sample_packet(int n_samples, value_t t0,
+                                    const std::vector<Event<value_t>>& events);
+		arma::Col<std::complex<value_t>> sample_data(int n_samples, value_t t0,
                                     const std::vector<Event<value_t>>& events);
 
         value_t x;

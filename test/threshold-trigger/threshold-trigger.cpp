@@ -20,7 +20,21 @@
  *
  *
  */
-
+ 
+#include "reconstruction.hpp"
+#include "reconstruction_gpu.hpp"
+ 
+#ifdef PRECISION
+	typedef double value_t;
+#else
+	typedef float value_t;
+#endif
+ 
+#ifdef USE_GPU
+	typedef Reconstruction_GPU<value_t> Rec_Type;
+#else
+	typedef Reconstruction_CPU<value_t> Rec_Type;
+#endif
 
 #include <iostream>
 #include <cmath>
@@ -31,7 +45,6 @@
 #include "electron.hpp"
 #include "antenna.hpp"
 #include "antenna_array.hpp"
-#include "reconstruction.hpp"
 #include "simulation.hpp"
 #include "hpc_helpers.hpp"
 
@@ -47,7 +60,7 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    Simulation_Settings<float> settings;
+    Simulation_Settings<value_t> settings;
 
     int grid_size = std::atoi(argv[1]);
 
@@ -69,22 +82,23 @@ int main(int argc, char **argv)
     int total_packets = std::atoi(argv[4]);
 
     settings.run_duration = total_packets*settings.n_samples/settings.sample_rate;
-    float dt = 1/settings.sample_rate;
+    value_t dt = 1/settings.sample_rate;
 
-    Simulation<float> sim(settings);
-    Antenna_Array<float> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
-    arma::Col<float> frequency = Data_Packet<float>::get_frequency(settings.n_samples, dt);
+    Simulation<value_t> sim(settings);
+    Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
+    arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(settings.n_samples, dt);
 
     int n_packets = 1000;
 
-    Reconstruction<float> rec(grid_size, n_packets, frequency, array);
+    Rec_Type rec(grid_size, n_packets, frequency, array);
 
     int packet = 0;
     while(packet<total_packets) {
-		float t_start = packet*settings.n_samples*dt;
+		value_t t_start = packet*settings.n_samples*dt;
 		//fprintf(stderr,"t_start: %18.15f\n", t_start);
 		TIMERSTART(SAMPLE)
-		std::vector<std::vector<Data_Packet<float>>> data = sim.observation(t_start,n_packets);
+		//std::vector<std::vector<Data_Packet<value_t>>> data = sim.observation(t_start,n_packets);
+		std::vector<std::complex<value_t>> data = sim.observation_flat(t_start, n_packets);
 		TIMERSTOP(SAMPLE)
 		packet+=n_packets;
 		

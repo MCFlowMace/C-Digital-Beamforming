@@ -118,7 +118,34 @@ arma::Col<value_t> Antenna<value_t>::get_mixed_sample(
 }
 
 template <typename value_t>
-Data_Packet<value_t> Antenna<value_t>::sample_data(
+arma::Col<std::complex<value_t>> Antenna<value_t>::sample_data(
+                                    int n_samples, value_t t0,
+                                    const std::vector<Event<value_t>>& events)
+
+{
+    //std::cout << "sample data" << std::endl;
+
+    arma::Col<value_t> sample_times(n_samples);
+
+    value_t dt = 1/sample_rate;
+    for(unsigned int i=0; i<n_samples; ++i) {
+        sample_times[i]= i*dt + t0;
+    }
+
+    arma::Col<value_t> signal = this->get_mixed_sample(sample_times, events);
+    arma::Col<value_t> noise = this->sample_noise(n_samples);
+
+    arma::Col<value_t> data = sqrt(snr)*signal+noise;
+
+    //std::cout << "addr sample: " << &data[0] << std::endl;
+    
+    Data_Packet<value_t> packet(std::move(sample_times), std::move(data));
+
+    return std::move(packet.frequency_data);
+}
+
+template <typename value_t>
+Data_Packet<value_t> Antenna<value_t>::sample_packet(
                                     int n_samples, value_t t0,
                                     const std::vector<Event<value_t>>& events)
 

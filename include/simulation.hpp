@@ -60,6 +60,8 @@ class Simulation{
 
         std::vector<std::vector<Data_Packet<value_t>>> observation(value_t t_start,
                                                         int n_packets);
+        std::vector<std::complex<value_t>> observation_flat(value_t t_start,
+                                                        int n_packets);
 
         arma::Mat<value_t> w_mat;
 

@@ -393,26 +393,26 @@ arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int bin)
 }
 
 template <typename value_t>
-void Reconstruction_GPU<value_t>::run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)
+void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& samples)
 {
 	std::cerr << "run" << std::endl;
 		
-	int bins_ = samples[0][0].frequency.n_elem;
-    int n_packets_ = samples[0].size();
-	int N_ = samples.size();
-	
 	int N = this->N;
 	int bins = this->bins;
 	int n_packets = this->n_packets;
 	int grid_size = this->grid_size;
 	
-	if(N!=N_ || bins != bins_ || n_packets != n_packets_)
-        throw std::invalid_argument(
-				"'samples' input array dimension is (" + std::to_string(N_) 
-				+ "," + std::to_string(n_packets_) + "," 
-				+ std::to_string(bins_) + ") but expected dimension was ("
-				+ std::to_string(N) + "," + std::to_string(n_packets) + ","
-				+ std::to_string(bins) + ")" );
+	//~ int bins_ = samples[0][0].frequency.n_elem;
+    //~ int n_packets_ = samples[0].size();
+	//~ int N_ = samples.size();
+	
+	//~ if(N!=N_ || bins != bins_ || n_packets != n_packets_)
+        //~ throw std::invalid_argument(
+				//~ "'samples' input array dimension is (" + std::to_string(N_) 
+				//~ + "," + std::to_string(n_packets_) + "," 
+				//~ + std::to_string(bins_) + ") but expected dimension was ("
+				//~ + std::to_string(N) + "," + std::to_string(n_packets) + ","
+				//~ + std::to_string(bins) + ")" );
 
 	size_t rec_size = grid_size*grid_size*bins*n_packets;
 	size_t samples_size = n_packets*N*bins;
@@ -421,17 +421,20 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::vector<Data_Packet<
     								
 	std::cerr << "Copy CPU" << std::endl;
 	size_t memsize_samples=sizeof(thrust::complex<value_t>)*samples_size;
+	
 
     TIMERSTART(COPY_CPU)
-    for(int j=0; j<n_packets; ++j) {
-		for(int i=0; i<N; ++i) {
-			//thrust::copy(samples[i][j].frequency_data.begin(),
-			//				samples[i][j].frequency_data.end(),
-			//				samples_H+(j*N+i)*bins);					CUERR
-			cudaMemcpy(this->samples_H, samples[i][j].frequency_data.memptr(), 
-							bins*sizeof(thrust::complex<value_t>), H2D);CUERR
-		}
-	}
+    //~ for(int j=0; j<n_packets; ++j) {
+		//~ for(int i=0; i<N; ++i) {
+			//~ //thrust::copy(samples[i][j].frequency_data.begin(),
+			//~ //				samples[i][j].frequency_data.end(),
+			//~ //				samples_H+(j*N+i)*bins);					CUERR
+			//~ cudaMemcpy(this->samples_H, samples[i][j].frequency_data.memptr(), 
+							//~ bins*sizeof(thrust::complex<value_t>), H2H);	CUERR
+		//~ }
+	//~ }
+	cudaMemcpy(this->samples_H, samples.data(), 
+											memsize_samples, H2H);			CUERR	
     //TIMERSTOP(COPY_CPU)
     TIMERBW(memsize_samples, COPY_CPU)
 
@@ -440,7 +443,7 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::vector<Data_Packet<
     std::cerr << "Copy GPU" << std::endl;
     TIMERSTART(COPY_GPU)
     
-	cudaMemcpy(this->samples_H, this->samples_D, 
+	cudaMemcpy(this->samples_D, this->samples_H, 
 											memsize_samples, H2D);			CUERR	
 
 

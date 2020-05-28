@@ -90,7 +90,7 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
         for(int j=0; j<n_packets; ++j) {
             //data_i[j] = array.antennas[i].sample_data(samples, t, this->events);
             //data_i.push_back(std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events)));
-            data_i[j] = std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events));
+            data_i[j] = std::move(array.antennas[i].sample_packet(settings.n_samples, t, this->events));
             //std::cout << "i, j " << i << ", " << j << std::endl;
             t=t_start+(j+1)*dt*settings.n_samples;
         }
@@ -101,6 +101,54 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
         
         //if(i==0)
 		//	fprintf(stderr,"last t: %18.15f next t: %18.15f\n", t, t+dt);
+    }
+
+#if defined PARALLEL || defined USE_GPU
+    }
+#endif
+
+    return data;
+}
+
+template <typename value_t>
+std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
+                                                value_t t_start, int n_packets)
+{
+
+    Antenna_Array<value_t> array(settings.N, settings.R, settings.snr,
+                                settings.w_mix, settings.sample_rate);
+
+    value_t dt = 1/settings.sample_rate;
+    
+    int bins = Data_Packet<value_t>::get_frequency(settings.n_samples, dt).n_elem;
+    std::vector<std::complex<value_t>> data(settings.N*n_packets*bins);
+    
+    //value_t delta_t = t_end-t_start;
+    //int samples = (int) (delta_t*settings.sample_rate);
+    //int n_packets = samples/settings.n_samples; //only take full packets of data
+    //SDIV(samples, settings.n_samples);
+
+#if defined PARALLEL || defined USE_GPU
+    #pragma omp parallel
+    {
+        //std::cout << "threads: " << omp_get_num_threads() << std::endl;
+    #pragma omp for
+#endif
+    for(int i=0; i<n_packets; ++i) {
+
+        value_t t {t_start};
+
+        for(int j=0; j<settings.N; ++j) {
+
+            arma::Col<std::complex<value_t>> data_j = std::move(array.antennas[i].sample_data(settings.n_samples, t, this->events));
+            
+            //improve this stupid copy later (as if I'll ever get around doing that ...)
+            for(int k=0; k<bins; ++k)
+				data[(i*settings.N+j)*bins+k] = data_j[k];
+
+            t=t_start+(j+1)*dt*settings.n_samples;
+        }
+
     }
 
 #if defined PARALLEL || defined USE_GPU

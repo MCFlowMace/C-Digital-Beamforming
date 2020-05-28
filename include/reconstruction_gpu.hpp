@@ -44,7 +44,8 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
         Reconstruction_GPU(const Reconstruction_GPU& temp_obj) = delete;
         Reconstruction_GPU& operator=(const Reconstruction_GPU& temp_obj) = delete;
 
-        virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples);
+        //virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
+        virtual void run(const std::vector<std::complex<value_t>>& samples);
 		virtual arma::Mat<value_t> get_img(unsigned int bin);
         virtual unsigned int get_max_bin();
 

@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
 
                 for(int i=0; i<N; ++i) {
-                    data.push_back(array.antennas[i].sample_data(n_samples, 0.0f, e));
+                    data.push_back(array.antennas[i].sample_packet(n_samples, 0.0f, e));
                 }
 
                 Reconstruction<float> rec(grid_size, data[0].frequency, array);
