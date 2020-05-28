@@ -63,6 +63,24 @@ typedef unsigned long long int uint64_cu;
             exit(1);                                                           \
         }                                                                      \
     }
+    
+    #define FREE_CUDA(pointer) \
+    do { \
+		if(pointer) { \
+			cudaFree(pointer); \
+			CUERR \
+			pointer=nullptr; \
+		} \
+    } while (false)
+    
+    #define FREE_HOST(pointer) \
+    do { \
+		if(pointer) { \
+			cudaFreeHost(pointer); \
+			CUERR \
+			pointer=nullptr; \
+		} \
+    } while (false) 
 
     // transfer constants
     #define H2D (cudaMemcpyHostToDevice)
