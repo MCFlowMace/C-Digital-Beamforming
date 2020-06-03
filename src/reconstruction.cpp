@@ -117,7 +117,7 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin,
         }
     }
 
-    std::cerr << "max at: " << x << " " << y << std::endl;
+    //std::cerr << "max at: " << x << " " << y << std::endl;
     return max_val;
 }
 

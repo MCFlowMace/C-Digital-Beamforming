@@ -286,7 +286,7 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 	int grid_size = this->grid_size;
 
 	value_t max_val = std::numeric_limits<value_t>::min();
-	std::cerr << max_val << std::endl;
+
 	unsigned int index;
 	//int packet = 0;
 	for(unsigned int i=0; i<bins; ++i) {
@@ -304,9 +304,9 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 		}
 	}
 
-	std::cerr << "Max frequency: " << this->frequency[index] 
-				<< " (bin: " << index << ") val: " << max_val << " packet: "
-				<< packet << std::endl;
+	//std::cerr << "Max frequency: " << this->frequency[index] 
+	//			<< " (bin: " << index << ") val: " << max_val << " packet: "
+	//			<< packet << std::endl;
 				
 	/*if(index>bins) {
 		for(unsigned int i=0; i<bins; ++i) {
@@ -350,8 +350,13 @@ void Reconstruction_GPU<value_t>::init_gpu()
 	
 	cudaMallocHost(&(this->samples_H), 
 				n_packets*N*bins*sizeof(thrust::complex<value_t>));		CUERR
-	cudaMallocHost(&(this->reconstructed_H), 
-				grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
+	std::cerr << "allocating " 
+				<< (grid_size*grid_size*bins*n_packets*sizeof(value_t)/1e9) 
+				<< "GB of unpinned host memory" << std::endl;
+	//using pinned memory results in frequent errors here for whatever reason ...
+	this->reconstructed_H=(value_t*) malloc(grid_size*grid_size*bins*n_packets*sizeof(value_t));
+	//cudaMallocHost(&(this->reconstructed_H), 
+	//			grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
 				
 	cudaMalloc(&(this->samples_D), 
 				n_packets*N*bins*sizeof(thrust::complex<value_t>));		CUERR
@@ -488,13 +493,13 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& 
     std::cerr << "start kernel" << std::endl;
     TIMERSTART(KERNELS)
     for(int packet=0; packet<n_packets; ++packet) {
-		std::cerr << packet << std::endl;
-		TIMERSTART(KERNEL_RED)
+		//std::cerr << packet << std::endl;
+		//TIMERSTART(KERNEL_RED)
 		reconstruction_red<<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
 											frequencies_D, time_delays_D,
 											phis_D, reconstructed_D, this->R,
 											this->wmix, bins, grid_size, N, packet);   CUERR
-		TIMERSTOP(KERNEL_RED)
+		//TIMERSTOP(KERNEL_RED)
 	}
 	TIMERSTOP(KERNELS)
 

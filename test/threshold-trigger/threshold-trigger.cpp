@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
     arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(settings.n_samples, dt);
 
-    int n_packets = 1000;
+    int n_packets = 100;
 
     Rec_Type rec(grid_size, n_packets, frequency, array);
     
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 		//std::cerr << "collecting triggers " << threshold << std::endl;
         triggers.emplace_back(new Threshold_Trigger<float>(threshold));
         cm_matrices.push_back(Confusion_Matrix());
-        threshold +=1000.0f;
+        threshold +=10000.0f;
 
     }
 
@@ -136,6 +136,7 @@ int main(int argc, char **argv)
 		
 		std::vector<float> test_vals;
 
+		TIMERSTART(FIND_MAX)
 		for(int j=0; j<n_packets; ++j) {
 			
 			unsigned int index_max = rec.get_max_bin(j);
@@ -152,14 +153,17 @@ int main(int argc, char **argv)
 			float val_max = rec.get_max_val(index_max, j);
 			test_vals.push_back(val_max);
 
-			std::cerr << "val_max: " << val_max << std::endl;
+			//std::cerr << "val_max: " << val_max << std::endl;
 		}
+		TIMERSTOP(FIND_MAX)
 		
-		std::cerr << "trigger inference with " << triggers.size() << " triggers" << std::endl;
+		//std::cerr << "trigger inference with " << triggers.size() << " triggers" << std::endl;
+		TIMERSTART(TRIGGER_INFERENCE)
 		for(int i=0; i<triggers.size(); ++i) {
 			std::vector<bool> inference = triggers[i]->classify(test_vals);
 			cm_matrices[i] += Confusion_Matrix(inference,truth);
 		}
+		TIMERSTOP(TRIGGER_INFERENCE)
 	}
 	
 	arma::Mat<double> curve = Confusion_Matrix::ROC_curve(cm_matrices);
