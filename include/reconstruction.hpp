@@ -46,11 +46,12 @@ class Reconstruction {
 
         //virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
         virtual void run(const std::vector<std::complex<value_t>>& samples)=0;
-        virtual arma::Mat<value_t> get_img(unsigned int bin)=0;
-        virtual unsigned int get_max_bin()=0;
+        virtual arma::Mat<value_t> get_img(unsigned int packet, 
+											unsigned int bin)=0;
+        virtual unsigned int get_max_bin(unsigned int packet)=0;
         
-        value_t get_max_val(unsigned int bin);
-        value_t get_mean_val(unsigned int bin);
+        value_t get_max_val(unsigned int bin, unsigned int packet=0);
+        value_t get_mean_val(unsigned int bin, unsigned int packet=0);
 
     protected:
 	

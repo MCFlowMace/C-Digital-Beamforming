@@ -74,9 +74,10 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 }
 
 template <typename value_t>
-value_t Reconstruction<value_t>::get_mean_val(unsigned int bin)
+value_t Reconstruction<value_t>::get_mean_val(unsigned int bin, 
+												unsigned int packet)
 {
-    arma::Mat<value_t> img = get_img(bin);
+    arma::Mat<value_t> img = get_img(packet, bin);
 
     value_t mean {0};
     unsigned int count=0;
@@ -94,9 +95,10 @@ value_t Reconstruction<value_t>::get_mean_val(unsigned int bin)
 }
 
 template <typename value_t>
-value_t Reconstruction<value_t>::get_max_val(unsigned int bin)
+value_t Reconstruction<value_t>::get_max_val(unsigned int bin,
+												unsigned int packet)
 {
-    arma::Mat<value_t> img = get_img(bin);
+    arma::Mat<value_t> img = get_img(packet, bin);
 
     value_t max_val = std::numeric_limits<value_t>::min();
     unsigned int x;

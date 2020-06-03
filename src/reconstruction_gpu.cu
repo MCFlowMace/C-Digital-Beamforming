@@ -279,20 +279,23 @@ void Reconstruction_GPU<value_t>::calc_phase(
 } */
 
 template <typename value_t>
-unsigned int Reconstruction_GPU<value_t>::get_max_bin()
+unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 {
 	
 	int bins = this->bins;
 	int grid_size = this->grid_size;
 
 	value_t max_val = std::numeric_limits<value_t>::min();
+	std::cerr << max_val << std::endl;
 	unsigned int index;
-	int packet = 0;
+	//int packet = 0;
 	for(unsigned int i=0; i<bins; ++i) {
 		for(unsigned int j=0; j<grid_size; ++j) {
 			for(unsigned int l=0; l<grid_size; ++l) {
 				
 				value_t val = reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i];
+				
+				//std::cerr << i << " " << val << " " << max_val << std::endl;
 				if(val>max_val) {
 					max_val=val;
 					index = i;
@@ -301,7 +304,23 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin()
 		}
 	}
 
-	std::cerr << "Max frequency: " << this->frequency[index] << std::endl;
+	std::cerr << "Max frequency: " << this->frequency[index] 
+				<< " (bin: " << index << ") val: " << max_val << " packet: "
+				<< packet << std::endl;
+				
+	if(index>bins) {
+		for(unsigned int i=0; i<bins; ++i) {
+			for(unsigned int j=0; j<grid_size; ++j) {
+				for(unsigned int l=0; l<grid_size; ++l) {
+					
+					value_t val = reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i];
+					
+					std::cerr << i << " " << j << " " << l << " "
+								<< val << " " << max_val << std::endl;
+				}
+			}
+	}
+	}
 
 	return index;
 }
@@ -369,9 +388,10 @@ void Reconstruction_GPU<value_t>::init_gpu()
 //~ }
 
 template <typename value_t>
-arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int bin)
+arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int packet, 
+															unsigned int bin)
 {
-	int packet=0;
+	//int packet=0;
 	
 	if(bin >= this->frequency.n_elem) {
 		std::string err = "Bin " + std::to_string(bin) 

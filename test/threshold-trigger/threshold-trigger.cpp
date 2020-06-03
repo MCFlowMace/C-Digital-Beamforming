@@ -52,6 +52,8 @@
 #include "binary_classifier.hpp"
 #include "ROC_evaluator.hpp"
 
+#include "confusion_matrix.hpp"
+
 int main(int argc, char **argv)
 {
 
@@ -91,6 +93,19 @@ int main(int argc, char **argv)
     int n_packets = 1000;
 
     Rec_Type rec(grid_size, n_packets, frequency, array);
+    
+    std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
+    std::vector<Confusion_Matrix> cm_matrices;
+
+    float threshold=0.5f;
+    while(threshold<1E10f) {
+		
+		//std::cerr << "collecting triggers " << threshold << std::endl;
+        triggers.emplace_back(new Threshold_Trigger<float>(threshold));
+        cm_matrices.push_back(Confusion_Matrix());
+        threshold +=1000.0f;
+
+    }
 
     int packet = 0;
     while(packet<total_packets) {
@@ -118,48 +133,29 @@ int main(int argc, char **argv)
 		TIMERSTOP(GET_TRUTH)
 		
 		rec.run(data);
+		
+		std::vector<float> test_vals;
+
+		for(int j=0; j<n_packets; ++j) {
+			
+			unsigned int index_max = rec.get_max_bin(j);
+			float val_max = rec.get_max_val(index_max, j);
+			test_vals.push_back(val_max);
+
+			std::cerr << "val_max: " << val_max << std::endl;
+		}
+		
+		for(int i=0; i<triggers.size(); ++i) {
+			std::vector<bool> inference = triggers[i]->classify(test_vals);
+			cm_matrices[i] += Confusion_Matrix(inference,truth);
+		}
 	}
-
+	
+	arma::Mat<double> curve = Confusion_Matrix::ROC_curve(cm_matrices);
+	
+	std::cerr << "printing" << std::endl;
+    curve.t().print();
 /*
-    std::vector<float> test_vals;
-
-    for(int j=0; j<n_packets; ++j) {
-
-        std::vector<Data_Packet<float>> data_in;
-
-        for(int i=0; i<data_out.size(); ++i)
-            data_in.push_back(data_out[i][j]);
-
-        rec.run(data_in);
-		
-        unsigned int index_max = rec.get_max_bin();
-        float val_max = rec.get_max_val(index_max);
-        test_vals.push_back(val_max);
-
-        std::cerr << "val_max: " << val_max << std::endl;
-    }
-
-    //~ FILE* output;
-
-    //~ output = fopen("output.dat", "w+");
-
-    //~ for(int i=0; i<sim.w_mat.n_rows; ++i) {
-        //~ int j = i/settings.n_samples;
-        //~ fprintf(output, "%20.10f %d %20.10f\n", sim.w_mat(i,0),(int) truth[j], test_vals[j]);
-    //~ }
-
-    //~ fclose(output);
-
-    std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
-
-    float threshold=0.5f;
-    while(threshold<1E10f) {
-		
-		//std::cerr << "collecting triggers " << threshold << std::endl;
-        triggers.emplace_back(new Threshold_Trigger<float>(threshold));
-        threshold +=1000.0f;
-
-    }
 
     ROC_Evaluator<float> ev;
 

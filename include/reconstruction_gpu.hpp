@@ -46,8 +46,9 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
 
         //virtual void run(const std::vector<std::vector<Data_Packet<value_t>>>& samples)=0;
         virtual void run(const std::vector<std::complex<value_t>>& samples);
-		virtual arma::Mat<value_t> get_img(unsigned int bin);
-        virtual unsigned int get_max_bin();
+		virtual arma::Mat<value_t> get_img(unsigned int packet, 
+											unsigned int bin);
+        virtual unsigned int get_max_bin(unsigned int packet);
 
     private:
 

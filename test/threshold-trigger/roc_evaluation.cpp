@@ -27,13 +27,17 @@
 
 #include "threshold_trigger.hpp"
 #include "ROC_evaluator.hpp"
+#include "confusion_matrix.hpp"
 
 int main(int argc, char **argv)
 {
     std::vector<float> data {0.51, 0.1, 0.3, 0.7, 0.8, 0.6, 0.4};
     std::vector<bool> label {true, false, false, true, true, false, true};
+    
+    std::vector<float> data2 {0.49, 0.1, 0.48, 0.65, 0.9, 0.3, 0.4};
+    std::vector<bool> label2 {false, false, true, true, true, false, false};
 
-    float threshold=0.0f;
+   /* float threshold=0.0f;
 
     while(threshold<1.0f) {
 
@@ -59,6 +63,21 @@ int main(int argc, char **argv)
 
         //~ std::cout << std::endl;
         threshold +=0.1f;
-    }
+    } */
+    
+    std::vector<bool> predict3 {true, false, true, false, false, false, false};
+    std::vector<bool> label3 {false, true, true, false, false, false, true};
+    
+    Confusion_Matrix cm;
+    
+    cm.print();
+    
+    cm += Confusion_Matrix(label, label2);
+    
+    cm.print();
+    
+    cm += Confusion_Matrix(predict3, label3);
+    
+    cm.print();
 }
 

@@ -71,6 +71,10 @@ reconstruction: $(OBJECTS) $(OBJECTS_CU)
 threshold-trigger: $(OBJECTS) $(OBJECTS_CU)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger
 	@echo "Linking complete!"
+	
+roc-evaluation: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/threshold-trigger/roc_evaluation.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/roc-evaluation
+	@echo "Linking complete!"
 
 event_generator: $(OBJECTS) $(OBJECTS_CU)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/event_generation/generate_events.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/generate_events
