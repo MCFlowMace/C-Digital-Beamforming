@@ -97,13 +97,13 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
     std::vector<Confusion_Matrix> cm_matrices;
 
-    float threshold=0.5f;
-    while(threshold<1E10f) {
+    float threshold=1e3f;
+    while(threshold<3e6f) {
 		
 		//std::cerr << "collecting triggers " << threshold << std::endl;
         triggers.emplace_back(new Threshold_Trigger<float>(threshold));
         cm_matrices.push_back(Confusion_Matrix());
-        threshold +=10000.0f;
+        threshold +=5.f;
 
     }
 
@@ -115,14 +115,14 @@ int main(int argc, char **argv)
 		//std::vector<std::vector<Data_Packet<value_t>>> data = sim.observation(t_start,n_packets);
 		std::vector<std::complex<value_t>> data = sim.observation_flat(t_start, n_packets);
 		TIMERSTOP(SAMPLE)
-		packet+=n_packets;
 		
 		std::vector<bool> truth(n_packets);
 
 		TIMERSTART(GET_TRUTH)
 		for(int i=0; i<truth.size(); ++i) {
 			truth[i]=false;
-			for(int j=i*settings.n_samples; j<(i+1)*settings.n_samples; ++j) {
+			int packet_0 = packet+i;
+			for(int j=packet_0*settings.n_samples; j<(packet_0+1)*settings.n_samples; ++j) {
 			   // std::cout << i << " " << j << " " << sim.w_mat.n_rows << " " << truth.size() << std::endl;
 				if(sim.w_mat(j,0)!=0.0) {
 					truth[i]=true;
@@ -132,6 +132,7 @@ int main(int argc, char **argv)
 		}
 		TIMERSTOP(GET_TRUTH)
 		
+		packet+=n_packets;
 		rec.run(data);
 		
 		std::vector<float> test_vals;

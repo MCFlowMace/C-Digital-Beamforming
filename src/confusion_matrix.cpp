@@ -66,11 +66,13 @@ void Confusion_Matrix::add_example(bool prediction, bool label)
 
 double Confusion_Matrix::get_TPR() const
 {
+	//std::cerr << "tp: " << this->true_positives << " pl: " << this->positive_labels << std::endl;
 	return (double) this->true_positives/this->positive_labels;
 }
 
 double Confusion_Matrix::get_FPR() const
 {
+	//std::cerr << "fp: " << this->false_positives << " nl: " << this->negative_labels << std::endl;
 	return (double) this->false_positives/this->negative_labels;
 }
 

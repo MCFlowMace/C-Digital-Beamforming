@@ -23,6 +23,7 @@
 
 
 #include "threshold_trigger.hpp"
+#include <iostream>
 
 template <typename value_t>
 Threshold_Trigger<value_t>::Threshold_Trigger(value_t threshold):
@@ -34,6 +35,7 @@ threshold {threshold}
 template <typename value_t>
 bool Threshold_Trigger<value_t>::classify(value_t x) const
 {
+	//std::cerr << "val: " << x << "threshold: " << threshold << std::endl;
     return x>threshold;
 }
 
