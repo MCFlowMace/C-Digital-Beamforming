@@ -139,12 +139,23 @@ int main(int argc, char **argv)
 		for(int j=0; j<n_packets; ++j) {
 			
 			unsigned int index_max = rec.get_max_bin(j);
+			
+			//FOR DEBUGGING - I know I should start doing this properly ...
+			//~ if(index_max>frequency.n_elem) {
+				//~ exit(-1);
+				//~ for(int i=0; i<settings.N; ++i) {
+					//~ for(int k=0; k<frequency.n_elem; ++k)
+						//~ std::cerr << data[(j*settings.N+i)*frequency.n_elem+k] << std::endl;
+				//~ }
+			//~ }
+			
 			float val_max = rec.get_max_val(index_max, j);
 			test_vals.push_back(val_max);
 
 			std::cerr << "val_max: " << val_max << std::endl;
 		}
 		
+		std::cerr << "trigger inference with " << triggers.size() << " triggers" << std::endl;
 		for(int i=0; i<triggers.size(); ++i) {
 			std::vector<bool> inference = triggers[i]->classify(test_vals);
 			cm_matrices[i] += Confusion_Matrix(inference,truth);

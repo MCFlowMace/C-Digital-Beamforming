@@ -308,7 +308,7 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 				<< " (bin: " << index << ") val: " << max_val << " packet: "
 				<< packet << std::endl;
 				
-	if(index>bins) {
+	/*if(index>bins) {
 		for(unsigned int i=0; i<bins; ++i) {
 			for(unsigned int j=0; j<grid_size; ++j) {
 				for(unsigned int l=0; l<grid_size; ++l) {
@@ -319,8 +319,8 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 								<< val << " " << max_val << std::endl;
 				}
 			}
-	}
-	}
+		}
+	}*/
 
 	return index;
 }
