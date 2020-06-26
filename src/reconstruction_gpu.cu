@@ -246,7 +246,8 @@ Reconstruction_GPU<value_t>::~Reconstruction_GPU()
 	FREE_CUDA(reconstructed_D);
 	
 	FREE_HOST(samples_H);
-	FREE_HOST(reconstructed_H);
+	//FREE_HOST(reconstructed_H);
+	free(reconstructed_H);
 }
 
 /*
