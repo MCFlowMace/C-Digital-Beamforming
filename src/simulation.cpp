@@ -32,7 +32,10 @@ Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):
 settings(settings),
 w_mat((int) (settings.sample_rate*settings.run_duration),settings.n_events)
 {
-    this->generation();
+	if(settings.manual)
+		this->manual_event();
+	else
+		this->generation();
     this->fill_w_mat();
 }
 
@@ -46,6 +49,23 @@ void Simulation<value_t>::generation()
         events.push_back(gen.generate(value_t{0}, settings.run_duration,
                                         settings.w_min, settings.w_max,
                                         settings.R));
+}
+
+template <typename value_t>
+void Simulation<value_t>::manual_event()
+{
+                
+	std::vector<value_t> timestamps;
+	std::vector<value_t> w_vals;
+	
+	timestamps.push_back(value_t(0));
+    w_vals.push_back(value_t(0));
+    w_vals.push_back(settings.w0/1e9);
+    timestamps.push_back(settings.run_duration);
+    w_vals.push_back(value_t(0));
+	
+	events.push_back(Event<value_t>(settings.e_r, settings.e_phi, 
+									std::move(timestamps), std::move(w_vals)));
 }
 
 template <typename value_t>

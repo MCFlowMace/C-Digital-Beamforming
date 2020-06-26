@@ -41,6 +41,12 @@ struct Simulation_Settings
     value_t run_duration;
     value_t mean_event_lifetime;
     value_t trap_efficiency;
+    
+    //for non-random events
+    bool manual;
+    value_t e_r;
+    value_t e_phi;
+    value_t w0;
 
     //event observation and data generation
     int N; //antennas
@@ -71,6 +77,7 @@ class Simulation{
         std::vector<Event<value_t>> events;
 
         void generation();
+        void manual_event();
         void fill_w_mat();
 };
 
