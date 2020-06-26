@@ -55,7 +55,6 @@ trap_efficiency(trap_efficiency)
     generator.seed(seed_final);
 }
 
-//TODO generate position
 template <typename value_t>
 Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
                                                     value_t w_min, value_t w_max,

@@ -87,8 +87,10 @@ int main(int argc, char **argv)
     value_t dt = 1/settings.sample_rate;
 
     Simulation<value_t> sim(settings);
-    Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, settings.w_mix, settings.sample_rate);
-    arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(settings.n_samples, dt);
+    Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, 
+									settings.w_mix, settings.sample_rate);
+    arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(
+														settings.n_samples, dt);
 
     int n_packets = 100;
 
@@ -113,7 +115,8 @@ int main(int argc, char **argv)
 		//fprintf(stderr,"t_start: %18.15f\n", t_start);
 		TIMERSTART(SAMPLE)
 		//std::vector<std::vector<Data_Packet<value_t>>> data = sim.observation(t_start,n_packets);
-		std::vector<std::complex<value_t>> data = sim.observation_flat(t_start, n_packets);
+		std::vector<std::complex<value_t>> data = sim.observation_flat(
+														t_start, n_packets);
 		TIMERSTOP(SAMPLE)
 		
 		std::vector<bool> truth(n_packets);
