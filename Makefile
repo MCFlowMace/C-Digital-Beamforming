@@ -67,6 +67,10 @@ $(BINDIR)/$(TARGET): $(OBJECTS) $(OBJECTS_CU)
 reconstruction: $(OBJECTS) $(OBJECTS_CU)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/reconstruction
 	@echo "Linking complete!"
+	
+response_map: $(OBJECTS) $(OBJECTS_CU)
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/response_map/response_map.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/response_map
+	@echo "Linking complete!"
 
 threshold-trigger: $(OBJECTS) $(OBJECTS_CU)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/threshold-trigger/threshold-trigger.cpp $(OBJ_TEST) $(OBJECTS_CU) $(LIB_DIR) $(LIBS) -o $(BINDIR)/threshold-trigger

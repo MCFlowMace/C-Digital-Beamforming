@@ -52,6 +52,8 @@ class Reconstruction {
         
         value_t get_max_val(unsigned int bin, unsigned int packet=0);
         value_t get_mean_val(unsigned int bin, unsigned int packet=0);
+        
+        Grid<value_t> get_grid() const;
 
     protected:
 	

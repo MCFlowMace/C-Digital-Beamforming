@@ -44,6 +44,11 @@ bins(frequency.n_elem)
 }
 
 template <typename value_t>
+Grid<value_t> Reconstruction<value_t>::get_grid() const {
+	return this->grid;
+}
+
+template <typename value_t>
 void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& array)
 {
 
@@ -117,7 +122,7 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin,
         }
     }
 
-    std::cerr << "max at: " << x << " " << y << std::endl;
+    std::cerr << "max at: " << this->grid.coords(x) << " " << this->grid.coords(y) << std::endl;
     return max_val;
 }
 
