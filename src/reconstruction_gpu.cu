@@ -169,9 +169,10 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 				//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
 
                 accum += samples[(packet*N+l)*bins+k]*phase;
+                
             }
-            rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum);
-
+			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum);
+	
         }
 
     }
@@ -340,13 +341,21 @@ void Reconstruction_GPU<value_t>::init_gpu()
     thrust::host_vector<value_t> time_delays_H(N*grid_size*grid_size);	CUERR
     thrust::host_vector<value_t> phis_H(N*grid_size*grid_size);			CUERR
 
-	for(int i=0; i<N; ++i) {
-		arma::Mat<value_t> mat_delay= this->grid_time_delays[i].t();
+	for(int l=0; l<N; ++l) {
+		/*arma::Mat<value_t> mat_delay= this->grid_time_delays[i].t();
 		arma::Mat<value_t> mat_phi = this->grid_phis[i].t();
 		thrust::copy(mat_delay.begin(),mat_delay.end(),
 					time_delays_H.begin()+i*grid_size*grid_size);		CUERR
 		thrust::copy(mat_phi.begin(),mat_phi.end(),
-					phis_H.begin()+i*grid_size*grid_size);				CUERR
+					phis_H.begin()+i*grid_size*grid_size);				CUERR*/
+		for(int i=0; i<grid_size; ++i) {
+			for(int j=0; j<grid_size; ++j) {
+				value_t time_delay = this->grid_time_delays[l](j,i);
+				value_t phi = this->grid_phis[l](j,i);
+				time_delays_H[(j*grid_size+i)*N+l] = time_delay;
+				phis_H[(j*grid_size+i)*N+l] = phi;
+			}
+		}
 	}
 	
 	cudaMallocHost(&(this->samples_H), 
@@ -404,6 +413,8 @@ arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int packet,
 								+ " is not a valid frequency bin!";
 		throw std::out_of_range(err);
 	}
+	
+	//std::cerr << "Fetching image for packet " << packet << " and bin " << bin << std::endl;
 
 	int grid_size = this->grid_size;
 	int bins = this->bins;
@@ -412,6 +423,7 @@ arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int packet,
 	for(int i=0; i<grid_size; ++i) {
 		for(int j=0; j<grid_size; ++j) {
 			img(j,i) = reconstructed_H[((packet*grid_size+i)*grid_size+j)*bins+bin];
+
 		}
 	}
 
