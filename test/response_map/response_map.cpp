@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     settings.w0 = 2*M_PI*26*1e9;
 
     //event observation and data generation
-    settings.N = 30; //antennas
+    settings.N = 32; //antennas
     settings.snr = std::atoi(argv[3]);
     settings.sample_rate = 3.2*1e9;
     settings.w_mix = 2*M_PI*24.6*1e9;

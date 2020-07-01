@@ -34,7 +34,7 @@ def plot_result(R, data, name):
     im=ax.imshow(np.transpose(im_masked),extent=(-R,R,-R,R),origin='lower')
     #im=ax.imshow(np.transpose(self.grid_phis[0]),extent=(-R,R,-R,R),origin='lower')
     #ax.plot(electron.x,electron.y,c='r',marker='o',ms=2)
-    fig.colorbar(im)
+    fig.colorbar(im, label=r'log$\left(\frac{I}{I_{max}}\right)$')
     ax.set_aspect('equal')
     ax.set_xlim(-(R+0.5),R+0.5)
     ax.set_ylim(-(R+0.5),R+0.5)
@@ -61,7 +61,7 @@ def main(args):
     data = np.loadtxt(inFile)
     mean = np.max(data[data!=-1])
     data[data!=-1] /= mean
-    data[data!=-1] = np.log(data[data!=-1])
+    data[data!=-1] = np.log10(data[data!=-1])
     plot_result(R, data, "response_map.pdf")
 
     #data = np.loadtxt("beamforming_rec_ref.dat")
