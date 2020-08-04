@@ -39,6 +39,9 @@ class Confusion_Matrix {
 		double get_FPR() const;
 		double get_TPR() const;
 		
+		double get_DFPR() const;
+		double get_DTPR() const;
+		
 		void print();
 		
 		static arma::Mat<double> ROC_curve(

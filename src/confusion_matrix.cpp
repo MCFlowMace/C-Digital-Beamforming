@@ -76,6 +76,38 @@ double Confusion_Matrix::get_FPR() const
 	return (double) this->false_positives/this->negative_labels;
 }
 
+double Confusion_Matrix::get_DTPR() const
+{
+	//std::cerr << "tp: " << this->true_positives << " pl: " << this->positive_labels << std::endl;
+	
+	double TP = this->true_positives;
+	double P = this->positive_labels;
+	
+	//uncertainty
+	double DTP = sqrt(this->true_positives);
+	double DP = sqrt(this->positive_labels);
+	
+	double first = DTP/P;
+	double second = DP*TP/(P*P);
+	return (double) sqrt(first*first + second*second);
+}
+
+double Confusion_Matrix::get_DFPR() const
+{
+	//std::cerr << "fp: " << this->false_positives << " nl: " << this->negative_labels << std::endl;
+	double FP = this->false_positives;
+	double N = this->negative_labels;
+	
+	//uncertainty
+	double DFP = sqrt(this->false_positives);
+	double DN = sqrt(this->negative_labels);
+	
+	double first = DFP/N;
+	double second = DN*FP/(N*N);
+	return (double) sqrt(first*first + second*second);
+}
+
+
 void Confusion_Matrix::print()
 {
 	std::cout 	<< " tp: " << this->true_positives 
@@ -99,11 +131,13 @@ Confusion_Matrix& Confusion_Matrix::operator +=(const Confusion_Matrix& rhs)
 arma::Mat<double> Confusion_Matrix::ROC_curve(
                     const std::vector<Confusion_Matrix>& cm_matrices)
 {
-    arma::Mat<double> curve(2, cm_matrices.size());
+    arma::Mat<double> curve(4, cm_matrices.size());
 
     for(int i=0; i<cm_matrices.size(); ++i) {
         curve(0, i) = cm_matrices[i].get_FPR();
-        curve(1, i) = cm_matrices[i].get_TPR();
+        curve(1, i) = cm_matrices[i].get_DFPR();
+        curve(2, i) = cm_matrices[i].get_TPR();
+        curve(3, i) = cm_matrices[i].get_DTPR();
     }
 
     return curve;
