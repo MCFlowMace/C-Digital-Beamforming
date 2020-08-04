@@ -162,12 +162,15 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
             thrust::complex<value_t> accum(0);
 
             for(int l=0; l<N; ++l) {
+				//value_t t = time_delays[(j*grid_size+i)*N+l];
+				//value_t phi = t*fc + phis[(j*grid_size+i)*N+l];
 				value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
 				
 				thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
 				
 				//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
 
+                //accum += t*SPEED_OF_LIGHT*samples[(packet*N+l)*bins+k]*phase;
                 accum += samples[(packet*N+l)*bins+k]*phase;
                 
             }

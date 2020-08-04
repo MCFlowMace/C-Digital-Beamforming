@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     settings.run_duration = 0.005f;
     
     settings.manual = true;
-    settings.e_r = 3.0f;
+    settings.e_r = 3.5f;
     settings.e_phi = 0.0f;
     settings.w0 = 2*M_PI*26*1e9;
 
