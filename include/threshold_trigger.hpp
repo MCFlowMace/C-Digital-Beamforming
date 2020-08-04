@@ -29,7 +29,7 @@ class Threshold_Trigger : public Binary_Classifier<value_t>
 {
     public:
 
-        bool classify(value_t x) const;
+        bool classify(value_t x) const override;
         Threshold_Trigger(value_t threshold);
         Threshold_Trigger() = default;
 

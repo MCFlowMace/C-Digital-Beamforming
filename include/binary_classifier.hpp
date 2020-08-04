@@ -30,6 +30,7 @@ class Binary_Classifier
 {
     public:
 
+		virtual ~Binary_Classifier() = default;
         virtual bool classify(input_t x) const = 0;
 
         std::vector<bool> classify(const std::vector<input_t>& x) const;
