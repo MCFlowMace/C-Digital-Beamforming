@@ -26,12 +26,16 @@
 
 template <typename value_t>
 Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
-                                        value_t wmix, value_t sample_rate):
+                                        value_t wmix, value_t sample_rate,
+                                        long seed):
 N(N),
 R(R),
 wmix(wmix)
 {
-    arma::arma_rng::set_seed_random();
+	if (seed<0)
+		arma::arma_rng::set_seed_random();
+	else
+		arma::arma_rng::set_seed(seed);
 
     for(int i=0; i<N; ++i) {
         value_t phi=(value_t)i/N*2*M_PI;

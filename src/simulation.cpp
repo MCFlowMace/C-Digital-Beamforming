@@ -35,20 +35,21 @@ w_mat((int) (settings.sample_rate*settings.run_duration),settings.n_events)
 	if(settings.manual)
 		this->manual_event();
 	else
-		this->generation();
+		this->generation(settings.seed);
     this->fill_w_mat();
 }
 
 template <typename value_t>
-void Simulation<value_t>::generation()
+void Simulation<value_t>::generation(long seed)
 {
     Event_Generator<value_t> gen(settings.mean_event_lifetime,
-                                    settings.trap_efficiency);
+                                    settings.trap_efficiency, seed);
 
     for(int i=0; i<settings.n_events; ++i)
         events.push_back(gen.generate(value_t{0}, settings.run_duration,
                                         settings.w_min, settings.w_max,
                                         settings.R));
+                                        
 }
 
 template <typename value_t>
@@ -86,7 +87,7 @@ std::vector<std::vector<Data_Packet<value_t>>> Simulation<value_t>::observation(
 {
 
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr,
-                                settings.w_mix, settings.sample_rate);
+                                settings.w_mix, settings.sample_rate, settings.seed);
 
     std::vector<std::vector<Data_Packet<value_t>>> data(settings.N);
 
@@ -136,7 +137,7 @@ std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
 {
 
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr,
-                                settings.w_mix, settings.sample_rate);
+                                settings.w_mix, settings.sample_rate, settings.seed);
                                 
 
     value_t dt = 1/settings.sample_rate;

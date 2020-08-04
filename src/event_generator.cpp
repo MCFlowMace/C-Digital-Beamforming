@@ -102,6 +102,8 @@ Event<value_t> Event_Generator<value_t>::generate(value_t t_min, value_t t_max,
 
     //~ for(int i=0; i<timestamps.size(); ++i)
         //~ std::cout << "# t" << timestamps[i] << " f " << w_vals[i+1]/(2*M_PI) << "\n";
+        
+    //~ std::cout << std::endl;
 
     value_t r0 = generate_r0(R);
     value_t phi0 = generate_phi0();

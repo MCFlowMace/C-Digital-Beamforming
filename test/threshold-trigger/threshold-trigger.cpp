@@ -57,8 +57,8 @@
 int main(int argc, char **argv)
 {
 
-    if(argc!=5) {
-        std::cerr << "args: [grid_size] [N_samples] [snr] [n_packets] !" << std::endl;
+    if(argc!=6) {
+        std::cerr << "args: [grid_size] [N_samples] [snr] [n_packets] [seed] !" << std::endl;
         exit(0);
     }
 
@@ -73,6 +73,9 @@ int main(int argc, char **argv)
     settings.mean_event_lifetime = 1/(2*1e-4f);
     settings.trap_efficiency = 0.5f;
     settings.run_duration = 0.005f;
+    settings.seed = std::atoi(argv[5]);
+    
+    settings.manual = false;
 
     //event observation and data generation
     settings.N = 30; //antennas
@@ -88,7 +91,7 @@ int main(int argc, char **argv)
 
     Simulation<value_t> sim(settings);
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, 
-									settings.w_mix, settings.sample_rate);
+									settings.w_mix, settings.sample_rate, settings.seed);
     arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(
 														settings.n_samples, dt);
 
@@ -99,13 +102,16 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
     std::vector<Confusion_Matrix> cm_matrices;
 
-    float threshold=1e3f;
-    while(threshold<3e6f) {
+	float lower = 1e6f; // 1.0f
+	float stride = 500000.0f; // 5000.0f
+	float upper = 3e8f; // 3e6f
+    float threshold=lower;
+    while(threshold<upper) {
 		
 		//std::cerr << "collecting triggers " << threshold << std::endl;
         triggers.emplace_back(new Threshold_Trigger<float>(threshold));
         cm_matrices.push_back(Confusion_Matrix());
-        threshold +=5.f;
+        threshold +=stride;
 
     }
 

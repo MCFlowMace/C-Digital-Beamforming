@@ -36,7 +36,7 @@ class Antenna_Array {
         value_t wmix;
 
         Antenna_Array(int N, value_t R, value_t snr,
-                                        value_t wmix, value_t sample_rate);
+                      value_t wmix, value_t sample_rate, long seed=-1);
 };
 
 

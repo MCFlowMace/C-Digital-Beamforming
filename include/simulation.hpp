@@ -41,6 +41,7 @@ struct Simulation_Settings
     value_t run_duration;
     value_t mean_event_lifetime;
     value_t trap_efficiency;
+    long seed;
     
     //for non-random events
     bool manual;
@@ -76,7 +77,7 @@ class Simulation{
         Simulation_Settings<value_t> settings;
         std::vector<Event<value_t>> events;
 
-        void generation();
+        void generation(long seed=-1);
         void manual_event();
         void fill_w_mat();
 };
