@@ -142,3 +142,18 @@ arma::Mat<double> Confusion_Matrix::ROC_curve(
 
     return curve;
 }
+
+arma::Mat<double> Confusion_Matrix::to_arma(
+                    const std::vector<Confusion_Matrix>& cm_matrices)
+{
+    arma::Mat<double> curve(4, cm_matrices.size());
+
+    for(int i=0; i<cm_matrices.size(); ++i) {
+        curve(0, i) = cm_matrices[i].false_positives;
+        curve(1, i) = cm_matrices[i].negative_labels;
+        curve(2, i) = cm_matrices[i].true_positives;
+        curve(3, i) = cm_matrices[i].positive_labels;
+    }
+
+    return curve;
+}

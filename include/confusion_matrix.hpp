@@ -46,6 +46,9 @@ class Confusion_Matrix {
 		
 		static arma::Mat<double> ROC_curve(
                     const std::vector<Confusion_Matrix>& cm_matrices);
+        
+        static arma::Mat<double> to_arma(
+                    const std::vector<Confusion_Matrix>& cm_matrices);
 		
 	private:
 	
