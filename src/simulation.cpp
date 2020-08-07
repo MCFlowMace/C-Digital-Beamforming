@@ -36,6 +36,7 @@ w_mat((int) (settings.sample_rate*settings.run_duration),settings.n_events)
 		this->manual_event();
 	else
 		this->generation(settings.seed);
+
     this->fill_w_mat();
 }
 
@@ -62,7 +63,7 @@ void Simulation<value_t>::manual_event()
 	timestamps.push_back(value_t(0));
     w_vals.push_back(value_t(0));
     w_vals.push_back(settings.w0/1e9);
-    timestamps.push_back(settings.run_duration);
+    timestamps.push_back(settings.run_duration/2);
     w_vals.push_back(value_t(0));
 	
 	events.push_back(Event<value_t>(settings.e_r, settings.e_phi, 
