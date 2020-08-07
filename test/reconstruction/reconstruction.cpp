@@ -50,8 +50,8 @@
 int main(int argc, char **argv)
 {
 
-    if(argc!=4) {
-        std::cerr << "args: [grid_size] [N_samples] [snr] !" << std::endl;
+    if(argc!=5) {
+        std::cerr << "args: [grid_size] [N_samples] [snr] [seed]!" << std::endl;
         exit(0);
     }
 
@@ -66,8 +66,13 @@ int main(int argc, char **argv)
     settings.mean_event_lifetime = 1/(2*1e-4f);
     settings.trap_efficiency = 0.5f;
     settings.run_duration = 0.005f;
+    settings.seed = std::atoi(argv[4]);
     
-    settings.manual = true;
+    if(settings.seed==-1)
+		settings.manual = true;
+	else
+		settings.manual= false;
+		
     settings.e_r = 3.5f;
     settings.e_phi = 0.0f;
     settings.w0 = 2*M_PI*26*1e9;
