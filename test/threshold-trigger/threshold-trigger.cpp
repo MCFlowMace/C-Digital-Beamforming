@@ -57,8 +57,8 @@
 int main(int argc, char **argv)
 {
 
-    if(argc!=6) {
-        std::cerr << "args: [grid_size] [N_samples] [snr] [n_packets] [seed] !" << std::endl;
+    if(argc!=9) {
+        std::cerr << "args: [grid_size] [N_samples] [snr] [n_packets] [seed] [r] [phi] [w0] !" << std::endl;
         exit(0);
     }
 
@@ -75,7 +75,14 @@ int main(int argc, char **argv)
     settings.run_duration = 0.005f;
     settings.seed = std::atoi(argv[5]);
     
-    settings.manual = false;
+    settings.e_r = std::atof(argv[6]);
+    settings.e_phi = std::atof(argv[7]);
+    settings.w0 = 2*M_PI*std::atof(argv[8]);
+    
+    if(settings.e_r >=0)
+		settings.manual = true;
+	else
+		settings.manual = false;
 
     //event observation and data generation
     settings.N = 30; //antennas
@@ -102,9 +109,9 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
     std::vector<Confusion_Matrix> cm_matrices;
 
-	float lower = 1e6f; // 1.0f
-	float stride = 500000.0f; // 5000.0f
-	float upper = 3e8f; // 3e6f
+	float lower = 1.0f; //1e6f; // 1.0f
+	float stride = 5000.0f; // 500000.0f; // 5000.0f
+	float upper = 3e6f; // 3e8f; // 3e6f
     float threshold=lower;
     while(threshold<upper) {
 		
@@ -176,7 +183,8 @@ int main(int argc, char **argv)
 		TIMERSTOP(TRIGGER_INFERENCE)
 	}
 	
-	arma::Mat<double> curve = Confusion_Matrix::ROC_curve(cm_matrices);
+	arma::Mat<double> curve = Confusion_Matrix::to_arma(cm_matrices);
+	//arma::Mat<double> curve = Confusion_Matrix::ROC_curve(cm_matrices);
 	
 	std::cerr << "printing" << std::endl;
     curve.t().print();
