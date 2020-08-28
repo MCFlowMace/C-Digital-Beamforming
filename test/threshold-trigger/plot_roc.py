@@ -31,7 +31,8 @@ from statsmodels.stats.proportion import proportion_confint
 
 def get_roc(data):
 	
-	print(data)
+	print("actual true: ", data[:,3])
+	print("actual false: ", data[:,1])
 	
 	data_out = np.empty(shape=[data.shape[0], data.shape[1]+2])
 	data_out[:,0] = data[:,0]/data[:,1]
@@ -46,8 +47,6 @@ def get_roc(data):
 	errors = proportion_confint(data[:,2], data[:,3])
 	data_out[:,4] = data_out[:,3] - errors[0]
 	data_out[:,5] = errors[1] - data_out[:,3]
-	
-	print(data_out)
 	
 	return data_out
     
@@ -142,9 +141,9 @@ def main(args):
     
     binary = "../../bin/threshold-trigger "
     n_samples = 1000
-    grid_size_vals = [50]#, 50, 100]
-    snr_vals = [0.1, 0.25, 0.5]
-    n_packets = 5000
+    grid_size_vals = [25, 50, 100]
+    snr_vals = [0.1]
+    n_packets = 1000
     r_vals = np.linspace(0, R, 100)
     phi = 0.0
     w0 = 26e9
@@ -154,9 +153,12 @@ def main(args):
     
     #seed = 123456
     
+  
     grid_size = grid_size_vals[0]
     
     grid_boundaries = np.linspace(-R,R,grid_size+1)
+    
+    """
     
     auc_vals = np.empty(shape=[len(snr_vals),r_vals.shape[0]])
     
@@ -172,7 +174,7 @@ def main(args):
     
     plot_x_AUC(r_vals, auc_vals, snr_vals, 'R_AUC', 'r[cm]', grid_boundaries)
         
-    """
+   """
 
     for snr in snr_vals:
         fig, ax = plt.subplots()
@@ -181,14 +183,14 @@ def main(args):
         for grid_size in grid_size_vals:
             
             data = run_threshold_trigger(binary, grid_size, n_samples, snr, 
-                            n_packets, seed, r, phi, w0)
+                            n_packets, seed, -1, phi, w0)
             
             data = get_roc(data)
 
             auc = plot_curve(ax, data, label="g="+str(grid_size))
             
         create_roc_plot(fig, ax, snr)
-    """
+    
     
     return 0
 

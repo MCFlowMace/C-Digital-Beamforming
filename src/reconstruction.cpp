@@ -20,6 +20,8 @@
  *
  *
  */
+ 
+#include <cfloat>
 
 #include "reconstruction.hpp"
 #include "utility_macros.hpp"
@@ -111,11 +113,13 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin,
 
     for(int i=0; i<grid_size; ++i) {
         for(int j=0; j<grid_size; ++j) {
-            if(img(j, i) ==-1)
+			
+			value_t val = img(j,i);
+            if(val ==-1)
                 continue;
 
-            if(img(j, i) > max_val) {
-                max_val=img(j,i);
+            if(val>max_val && !std::isinf(val)) {
+                max_val=val;
                 x=i;
                 y=j;
             }

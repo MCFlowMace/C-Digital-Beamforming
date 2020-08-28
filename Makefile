@@ -4,7 +4,9 @@ ARCH=sm_70
 
 #c++ compiler options
 GCC=g++
-GCCFLAGS= -O3 -std=c++17 -ffast-math -fopenmp -D$(EXEC)
+GCCFLAGS= -O3 -std=c++17 -fopenmp -D$(EXEC)
+
+#-ffast-math
 
 #NVCC options
 NVCC=nvcc

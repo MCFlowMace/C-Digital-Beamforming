@@ -109,9 +109,9 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
     std::vector<Confusion_Matrix> cm_matrices;
 
-	float lower = 1.0f; //1e6f; // 1.0f
-	float stride = 5000.0f; // 500000.0f; // 5000.0f
-	float upper = 3e6f; // 3e8f; // 3e6f
+	float lower = 1e6f; // 1.0f;
+	float stride = 5e12f; // 5000.0f;
+	float upper = 5e15f; // 3e6f;
     float threshold=lower;
     while(threshold<upper) {
 		

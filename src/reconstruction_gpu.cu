@@ -21,6 +21,7 @@
  *
  */
 #include <stdexcept>
+#include <cfloat>
 
 #include <thrust/complex.h>
 #include <thrust/host_vector.h>
@@ -160,21 +161,36 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 			//value_t f = wmix/2;
 
             thrust::complex<value_t> accum(0);
+            value_t A{0};
+
 
             for(int l=0; l<N; ++l) {
-				//value_t t = time_delays[(j*grid_size+i)*N+l];
-				//value_t phi = t*fc + phis[(j*grid_size+i)*N+l];
+				value_t t = time_delays[(j*grid_size+i)*N+l];
+				value_t phi = t*fc + phis[(j*grid_size+i)*N+l];
+				
+				A += 1/(t*t);
+				
+				thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
+
+                accum += samples[(packet*N+l)*bins+k]*phase/t;
+                
+            }
+  
+            
+			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum)*SPEED_OF_LIGHT/A;
+
+		/*
+			for(int l=0; l<N; ++l) {
 				value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
 				
 				thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
 				
 				//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
 
-                //accum += t*SPEED_OF_LIGHT*samples[(packet*N+l)*bins+k]*phase;
                 accum += samples[(packet*N+l)*bins+k]*phase;
                 
             }
-			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum);
+			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum); */
 	
         }
 
@@ -301,7 +317,7 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 				value_t val = reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i];
 				
 				//std::cerr << i << " " << val << " " << max_val << std::endl;
-				if(val>max_val) {
+				if(val>max_val && !std::isinf(val)) {
 					max_val=val;
 					index = i;
 				}
