@@ -73,12 +73,12 @@ int main(int argc, char **argv)
 	else
 		settings.manual= false;
 		
-    settings.e_r = 3.5f;
+    settings.e_r = 4.f;
     settings.e_phi = 0.0f;
     settings.w0 = 2*M_PI*26*1e9;
 
     //event observation and data generation
-    settings.N = 30; //antennas
+    settings.N = 75; //antennas
     settings.snr = std::atoi(argv[3]);
     settings.sample_rate = 3.2*1e9;
     settings.w_mix = 2*M_PI*24.6*1e9;
@@ -108,13 +108,29 @@ int main(int argc, char **argv)
 	rec.run(data);
 	
     unsigned int index_max = rec.get_max_bin(0);
-
+	float delta_f = frequency[1]-frequency[0];
+	
+   /*
+	unsigned int index_max = 0;
+	
+	
+	for(int i=0; i<frequency.n_elem; ++i) {
+		value_t w =	settings.w_mix+(frequency[i]+delta_f/2)*2*M_PI;
+		if(w>settings.w0) {
+			index_max = i;
+			break;
+		}
+	} */
+		
     float max_val = rec.get_max_val(index_max, 0);
+    
+    std::cerr << " max ind: " <<  index_max << std::endl;
+    index_max = 436;
 
     std::cerr << "val: " << max_val << std::endl;
    
-	std::cerr << "frequency: " << settings.w_mix/(2*M_PI)+frequency[index_max]
-				<< " deltaf: " << frequency[1]-frequency[0] << std::endl;
+	std::cerr << "frequency: " << (settings.w_mix/(2*M_PI)+frequency[index_max])/1e9
+				<< " deltaf: " << delta_f << std::endl;
 
     auto img = rec.get_img(0, index_max);
 

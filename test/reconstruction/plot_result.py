@@ -25,6 +25,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+from scipy.fft import rfft, rfftfreq, fft, fftfreq, irfft, fftshift, ifft, fft2
 
 def plot_result(R, data, name):
 
@@ -59,7 +60,23 @@ def main(args):
     R=args.R
 
     data = np.loadtxt(inFile)
+    data[data==-1]=0
+    
+    ind = (np.isfinite(data))^True
+    data[ind] = 0
     plot_result(R, data, "beamforming_rec_test.pdf")
+    
+    data_masked = np.ma.masked_where(data==-1,data)
+    data_freq = fftshift(fft2(data_masked))
+    
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
+    im = ax.imshow(np.transpose(np.abs(data_freq)), origin='lower')
+    fig.colorbar(im)
+    plt.savefig("beamforming_freq_test.pdf")
+    plt.close(fig)
+    
+    #plot_result(R, np.abs(data_freq), "beamforming_freq_test.pdf")
 
     data = np.loadtxt("beamforming_rec_ref.dat")
     plot_result(R, data, "beamforming_rec_ref.pdf")
