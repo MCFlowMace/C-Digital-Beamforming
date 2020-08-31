@@ -146,17 +146,13 @@ std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
     int bins = Data_Packet<value_t>::get_frequency(settings.n_samples, dt).n_elem;
     std::vector<std::complex<value_t>> data(settings.N*n_packets*bins);
     
-    //std::cerr << "t start: " << t_start << std::endl;
-    
-    //value_t delta_t = t_end-t_start;
-    //int samples = (int) (delta_t*settings.sample_rate);
-    //int n_packets = samples/settings.n_samples; //only take full packets of data
-    //SDIV(samples, settings.n_samples);
 
 #if defined PARALLEL || defined USE_GPU
     #pragma omp parallel
     {
-        //std::cout << "threads: " << omp_get_num_threads() << std::endl;
+	//not sure if it's a good idea to set new random seeds each time the function is called
+	//also this disables the option of setting a fixed seed	
+	arma::arma_rng::set_seed_random();
     #pragma omp for
 #endif
     for(int i=0; i<n_packets; ++i) {
@@ -165,7 +161,6 @@ std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
 
         for(int j=0; j<settings.N; ++j) {
 			
-			//std::cerr << "t: " << t << std::endl;
 
             arma::Col<std::complex<value_t>> data_j = std::move(array.antennas[j].sample_data(settings.n_samples, t, this->events));
             

@@ -41,11 +41,8 @@ time_data(std::move(time_data))
 	
 	int upper = frequency.n_elem;
 
-    arma::Col<std::complex<value_t>> fft = arma::fft(this->time_data);
-
-    frequency_data = fft; //fft.subvec(1,upper+1);
-    //frequency_data = fft;
-
+    frequency_data = arma::fft(this->time_data);
+    
 }
 
 template <typename value_t>
