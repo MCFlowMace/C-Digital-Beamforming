@@ -173,7 +173,7 @@ __device__ inline value_t beamforming(value_t const fc, int const N,
 		accum += samples[(packet*N+l)*bins+k]*phase;
 		
 	}
-	return thrust::abs(accum);			
+	return thrust::norm(accum);			
 }
 
 template <typename value_t, bool weighted>
