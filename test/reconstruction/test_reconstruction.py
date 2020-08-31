@@ -62,6 +62,7 @@ def run_reconstruction(binary, grid_size, n_samples, snr,
                 + str(r) + " " + str(phi) + " " + str(w0) + " "\
                 + str(N) + " >result.out"
     
+    print(cmd)
     os.system(cmd)
                 
     data = np.loadtxt("result.out")
@@ -89,22 +90,7 @@ def main(args):
 
     data = run_reconstruction(binary, grid_size, n_samples, snr, seed, r, phi, w0, N)
     
-    print(data.shape)
     plot_result(R, data[438], "beamforming_rec_test.pdf")
-    
-    """
-    data[data==-1]=0
-    
-    data_masked = np.ma.masked_where(data==-1,data)
-    data_freq = fftshift(fft2(data_masked))
-    
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal')
-    im = ax.imshow(np.transpose(np.abs(data_freq)), origin='lower')
-    fig.colorbar(im)
-    plt.savefig("beamforming_freq_test.pdf")
-    plt.close(fig)
-    """
 
     data = np.loadtxt("beamforming_rec_ref.dat")
     plot_result(R, data, "beamforming_rec_ref.pdf")

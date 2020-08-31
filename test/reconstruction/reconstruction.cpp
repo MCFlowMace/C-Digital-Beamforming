@@ -79,10 +79,6 @@ int main(int argc, char **argv)
 		settings.manual = true;
 	else
 		settings.manual = false;
-		
-    settings.e_r = 4.f;
-    settings.e_phi = 0.0f;
-    settings.w0 = 2*M_PI*26.0016e9;
 
     //event observation and data generation
     settings.N = std::atoi(argv[9]); //30; //antennas
@@ -142,6 +138,7 @@ int main(int argc, char **argv)
 
     //img.print();
     rec.print(0);
+    rec.print(1);
 
 	std::cerr << "done!" << std::endl;
 }
