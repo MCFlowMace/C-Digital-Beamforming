@@ -132,13 +132,8 @@ int main(int argc, char **argv)
     float max_val = rec.get_max_val(index_max, 0);
     
     std::cerr << " max ind: " <<  index_max << std::endl;
-    index_max = 436;
 
     std::cerr << "val: " << max_val << std::endl;
-    
-    std::cerr << " max ind: " << index_max << std::endl;
-    
-    index_max = 437;
    
 	std::cerr << "frequency: " << (settings.w_mix/(2*M_PI)+frequency[index_max])/1e9
 				<< " deltaf: " << delta_f << std::endl;

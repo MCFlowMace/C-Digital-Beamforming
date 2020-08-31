@@ -28,11 +28,11 @@ import argparse
 from scipy.fft import rfft, rfftfreq, fft, fftfreq, irfft, fftshift, ifft, fft2
 import os
 
-def plot_result(R, data, name):
+def plot_result(R, data, name, save=True):
 
     fig, ax = plt.subplots()
 
-    im_masked = np.ma.masked_where(data==-1,data)
+    im_masked = np.ma.masked_where(data==0,data)
     im=ax.imshow(im_masked,extent=(-R,R,-R,R),origin='lower')
     #im=ax.imshow(np.transpose(self.grid_phis[0]),extent=(-R,R,-R,R),origin='lower')
     #ax.plot(electron.x,electron.y,c='r',marker='o',ms=2)
@@ -45,7 +45,12 @@ def plot_result(R, data, name):
     ylabel='y[cm]'
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    plt.savefig(name)
+    
+    if save:
+        plt.savefig(name)
+    else:
+        plt.show()
+        
     plt.close(fig)
 
 def run_reconstruction(binary, grid_size, n_samples, snr, 
@@ -63,6 +68,9 @@ def run_reconstruction(binary, grid_size, n_samples, snr,
     os.system("rm result.out")
     
     data = data.reshape((-1, grid_size, grid_size))
+    ind = (np.isfinite(data))^True
+    data[ind] = 0
+    data[data==-1] = 0
     
     return data
 
@@ -84,11 +92,8 @@ def main(args):
     print(data.shape)
     plot_result(R, data[438], "beamforming_rec_test.pdf")
     
+    """
     data[data==-1]=0
-    
-    ind = (np.isfinite(data))^True
-    data[ind] = 0
-    plot_result(R, data, "beamforming_rec_test.pdf")
     
     data_masked = np.ma.masked_where(data==-1,data)
     data_freq = fftshift(fft2(data_masked))
@@ -99,7 +104,7 @@ def main(args):
     fig.colorbar(im)
     plt.savefig("beamforming_freq_test.pdf")
     plt.close(fig)
-
+    """
 
     data = np.loadtxt("beamforming_rec_ref.dat")
     plot_result(R, data, "beamforming_rec_ref.pdf")
