@@ -43,7 +43,7 @@ time_data(std::move(time_data))
 
     arma::Col<std::complex<value_t>> fft = arma::fft(this->time_data);
 
-    frequency_data = fft.subvec(1,upper+1);
+    frequency_data = fft; //fft.subvec(1,upper+1);
     //frequency_data = fft;
 
 }
@@ -51,20 +51,15 @@ time_data(std::move(time_data))
 template <typename value_t>
 arma::Col<value_t> Data_Packet<value_t>::get_frequency(int n_samples, value_t dt) {
 	
-	int upper, lower;
+	int n = n_samples/2 + 1; //integer division intended
 
-    if(!(n_samples%2)) {
-        lower=-n_samples/2;
-        upper=n_samples/2-1;
-    } else {
-        lower=-(n_samples-1)/2;
-        upper=(n_samples-1)/2;
-    }
+	//see scipy.fft.rfftfreq    
+    
 
-    arma::Col<value_t> _frequency(upper);
+    arma::Col<value_t> _frequency(n);
 
-    for(int i=0; i<upper; ++i)
-        _frequency[i] = (i+1)/(dt*n_samples);
+    for(int i=0; i<n; ++i)
+        _frequency[i] = i/(dt*n_samples);
 
 	return _frequency;
 }
