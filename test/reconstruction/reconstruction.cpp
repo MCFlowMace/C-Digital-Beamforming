@@ -125,7 +125,8 @@ int main(int argc, char **argv)
 
     auto img = rec.get_img(0, index_max);
 
-    img.print();
+    //img.print();
+    rec.print(0);
 
 	std::cerr << "done!" << std::endl;
 }

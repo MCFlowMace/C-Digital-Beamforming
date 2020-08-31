@@ -49,6 +49,8 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
 		virtual arma::Mat<value_t> get_img(unsigned int packet, 
 											unsigned int bin);
         virtual unsigned int get_max_bin(unsigned int packet);
+        
+        void print(unsigned int packet);
 
     private:
 

@@ -476,6 +476,24 @@ arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int packet,
 }
 
 template <typename value_t>
+void Reconstruction_GPU<value_t>::print(unsigned int packet)
+{
+	int grid_size = this->grid_size;
+	int bins = this->bins;
+	arma::Mat<value_t> img(grid_size, grid_size);
+	
+	for(int k=0; k<bins; ++k) {
+		for(int i=0; i<grid_size; ++i) {
+			for(int j=0; j<grid_size; ++j) {
+				std::cout << reconstructed_H[((packet*grid_size+i)*grid_size+j)*bins+k] << ' ';
+			}
+			std::cout << '\n';
+		}
+	}
+
+}
+
+template <typename value_t>
 void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& samples)
 {
 	std::cerr << "run" << std::endl;
