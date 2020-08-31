@@ -37,7 +37,7 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
 
         Reconstruction_GPU(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
-                        const Antenna_Array<value_t>& array);
+                        const Antenna_Array<value_t>& array, bool weighted);
 
         ~Reconstruction_GPU();
 

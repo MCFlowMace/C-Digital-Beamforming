@@ -129,6 +129,54 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 } */
 
 template <typename value_t>
+__device__ inline value_t weighted_beamforming(value_t const fc, int const N, 
+												int const grid_size, 
+												int const packet, int const bins,
+												int const i, int const j, int const k,
+												value_t const * const time_delays,
+												value_t const * const phis,
+												thrust::complex<value_t> const * const samples)
+{
+	thrust::complex<value_t> accum(0);
+	value_t A{0};
+	for(int l=0; l<N; ++l) {
+		value_t t = time_delays[(j*grid_size+i)*N+l];
+		value_t phi = t*fc + phis[(j*grid_size+i)*N+l];
+		thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
+		
+		A += 1/(t*t);
+
+		accum += samples[(packet*N+l)*bins+k]*phase/t;
+		
+	}
+	return thrust::norm(accum)*SPEED_OF_LIGHT/A;
+}
+
+template <typename value_t>
+__device__ inline value_t beamforming(value_t const fc, int const N, 
+										int const grid_size, 
+										int const packet, int const bins,
+										int const i, int const j, int const k,
+										value_t const * const time_delays,
+										value_t const * const phis,
+										thrust::complex<value_t> const * const samples)
+{
+	
+	thrust::complex<value_t> accum(0);
+	for(int l=0; l<N; ++l) {
+		value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
+		
+		thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
+		
+		//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
+
+		accum += samples[(packet*N+l)*bins+k]*phase;
+		
+	}
+	return thrust::abs(accum);			
+}
+
+template <typename value_t, bool weighted>
 __global__ void reconstruction_red(thrust::complex<value_t>* samples,
                                 value_t* frequencies, value_t* time_delays,
                                 value_t* phis, value_t* rec, value_t R,
@@ -159,39 +207,17 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 			
 			value_t fc = 2*M_PI*frequencies[k] + wmix; //maybe to shared memory
 			//value_t f = wmix/2;
-
-            thrust::complex<value_t> accum(0);
-            value_t A{0};
-
-
-            for(int l=0; l<N; ++l) {
-				value_t t = time_delays[(j*grid_size+i)*N+l];
-				value_t phi = t*fc + phis[(j*grid_size+i)*N+l];
-				
-				A += 1/(t*t);
-				
-				thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
-
-                accum += samples[(packet*N+l)*bins+k]*phase/t;
-                
-            }
-  
+			value_t result;
             
-			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum)*SPEED_OF_LIGHT/A;
-
-		/*
-			for(int l=0; l<N; ++l) {
-				value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
-				
-				thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
-				
-				//thrust::complex<value_t> phase(time_delays[(j*grid_size+i)*N+l]*fc, phis[(j*grid_size+i)*N+l]);
-
-                accum += samples[(packet*N+l)*bins+k]*phase;
-                
-            }
-			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::norm(accum); */
-	
+            
+            if(weighted) {
+				result = weighted_beamforming(fc, N, grid_size, packet, bins,
+												i, j, k, time_delays, phis, samples);
+			} else {
+				result = beamforming(fc, N, grid_size, packet, bins,
+												i, j, k, time_delays, phis, samples);
+			}
+			rec[((packet*grid_size+i)*grid_size+j)*bins+k] = result;
         }
 
     }
@@ -250,8 +276,8 @@ __global__ void reconstruction_red2(thrust::complex<value_t>* samples,
 template <typename value_t>
 Reconstruction_GPU<value_t>::Reconstruction_GPU(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
-						const Antenna_Array<value_t>& array):
-Reconstruction<value_t>(grid_size, n_packets, frequency, array)
+						const Antenna_Array<value_t>& array, bool weighted):
+Reconstruction<value_t>(grid_size, n_packets, frequency, array, weighted)
 {
 	init_gpu();
 }
@@ -524,14 +550,20 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& 
     
     std::cerr << "start kernel" << std::endl;
     TIMERSTART(KERNELS)
-    for(int packet=0; packet<n_packets; ++packet) {
-		//std::cerr << packet << std::endl;
-		//TIMERSTART(KERNEL_RED)
-		reconstruction_red<<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
-											frequencies_D, time_delays_D,
-											phis_D, reconstructed_D, this->R,
-											this->wmix, bins, grid_size, N, packet);   CUERR
-		//TIMERSTOP(KERNEL_RED)
+    if(this->weighted) {
+		for(int packet=0; packet<n_packets; ++packet) {
+			reconstruction_red<value_t, true><<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
+												frequencies_D, time_delays_D,
+												phis_D, reconstructed_D, this->R,
+												this->wmix, bins, grid_size, N, packet);   CUERR
+		}
+	} else {
+		for(int packet=0; packet<n_packets; ++packet) {
+			reconstruction_red<value_t, false><<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
+												frequencies_D, time_delays_D,
+												phis_D, reconstructed_D, this->R,
+												this->wmix, bins, grid_size, N, packet);   CUERR
+		}
 	}
 	TIMERSTOP(KERNELS)
 

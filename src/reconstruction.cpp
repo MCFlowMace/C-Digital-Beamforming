@@ -33,12 +33,13 @@
 template <typename value_t>
 Reconstruction<value_t>::Reconstruction(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
-                        const Antenna_Array<value_t>& array):
+                        const Antenna_Array<value_t>& array, bool weighted):
 grid_size(grid_size),
 grid(grid_size),
 frequency(frequency),
 n_packets(n_packets),
-bins(frequency.n_elem)
+bins(frequency.n_elem),
+weighted(weighted)
 {
     //frequency = sample.frequency;
     //reconstructed(frequency.n_elem, grid_size, grid_size);
