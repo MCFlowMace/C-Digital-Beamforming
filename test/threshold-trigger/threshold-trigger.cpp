@@ -75,9 +75,9 @@ int main(int argc, char **argv)
     settings.run_duration = 0.005f;
     settings.seed = std::atoi(argv[5]);
     
-    settings.e_r = std::atof(argv[6]);
-    settings.e_phi = std::atof(argv[7]);
-    settings.w0 = 2*M_PI*std::atof(argv[8]);
+    settings.e_r = std::stof(argv[6]);
+    settings.e_phi = std::stof(argv[7]);
+    settings.w0 = 2*M_PI*std::stof(argv[8]);
     
     if(settings.e_r >=0)
 		settings.manual = true;
