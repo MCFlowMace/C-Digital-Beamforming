@@ -36,7 +36,8 @@ class Reconstruction {
 
         Reconstruction(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
-                        const Antenna_Array<value_t>& array);
+                        const Antenna_Array<value_t>& array,
+                        bool weighted);
 
 
         //~Reconstruction();
@@ -69,6 +70,8 @@ class Reconstruction {
         
         std::vector<arma::Mat<value_t>> grid_time_delays;
         std::vector<arma::Mat<value_t>> grid_phis;
+        
+        bool weighted;
     
     private:
 

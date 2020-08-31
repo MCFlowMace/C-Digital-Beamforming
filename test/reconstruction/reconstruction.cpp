@@ -50,14 +50,17 @@
 int main(int argc, char **argv)
 {
 
-    if(argc!=5) {
-        std::cerr << "args: [grid_size] [N_samples] [snr] [seed]!" << std::endl;
+    if(argc!=10) {
+        std::cerr << "args: [grid_size] [N_samples] [snr] [seed] [weighted] [r] [phi] [w0] [N]!" << std::endl;
         exit(0);
     }
 
     Simulation_Settings<value_t> settings;
 
     int grid_size = std::atoi(argv[1]);
+    bool weighted = std::atoi(argv[5]);
+    
+    std::cerr << weighted << std::endl;
 
     settings.n_events = 1;
     settings.w_min = 2*M_PI*24.6*1e9;
@@ -67,24 +70,28 @@ int main(int argc, char **argv)
     settings.trap_efficiency = 0.5f;
     settings.run_duration = 0.005f;
     settings.seed = std::atoi(argv[4]);
+		
+	settings.e_r = std::stof(argv[6]);
+    settings.e_phi = std::stof(argv[7]);
+    settings.w0 = 2*M_PI*std::stof(argv[8])*1e9;
     
-    if(settings.seed==-1)
+    if(settings.e_r >=0)
 		settings.manual = true;
 	else
-		settings.manual= false;
+		settings.manual = false;
 		
     settings.e_r = 4.f;
     settings.e_phi = 0.0f;
-    settings.w0 = 2*M_PI*26*1e9;
+    settings.w0 = 2*M_PI*26.0016e9;
 
     //event observation and data generation
-    settings.N = 75; //antennas
-    settings.snr = std::atoi(argv[3]);
+    settings.N = std::atoi(argv[9]); //30; //antennas
+    settings.snr = std::stod(argv[3]);
     settings.sample_rate = 3.2*1e9;
     settings.w_mix = 2*M_PI*24.6*1e9;
     settings.n_samples = std::atoi(argv[2]); //for fourier transform
 
-    int n_packets = 1;
+    int n_packets = 2; //use two packets because in manual simulation mode half of the packets will be noise and we want 1 full packet of signal to test the reconstruction
     settings.run_duration = n_packets*settings.n_samples/settings.sample_rate; //5 data packets
 	value_t dt = 1/settings.sample_rate;
 	
@@ -95,7 +102,7 @@ int main(int argc, char **argv)
     arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(
 														settings.n_samples, dt);
 
-    Rec_Type rec(grid_size, n_packets, frequency, array);
+    Rec_Type rec(grid_size, n_packets, frequency, array, weighted);
     
 	value_t t_start{0};
 
@@ -128,13 +135,18 @@ int main(int argc, char **argv)
     index_max = 436;
 
     std::cerr << "val: " << max_val << std::endl;
+    
+    std::cerr << " max ind: " << index_max << std::endl;
+    
+    index_max = 437;
    
 	std::cerr << "frequency: " << (settings.w_mix/(2*M_PI)+frequency[index_max])/1e9
 				<< " deltaf: " << delta_f << std::endl;
 
     auto img = rec.get_img(0, index_max);
 
-    img.print();
+    //img.print();
+    rec.print(0);
 
 	std::cerr << "done!" << std::endl;
 }

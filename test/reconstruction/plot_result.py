@@ -26,13 +26,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from scipy.fft import rfft, rfftfreq, fft, fftfreq, irfft, fftshift, ifft, fft2
+import os
 
 def plot_result(R, data, name):
 
     fig, ax = plt.subplots()
 
     im_masked = np.ma.masked_where(data==-1,data)
-    im=ax.imshow(np.transpose(im_masked),extent=(-R,R,-R,R),origin='lower')
+    im=ax.imshow(im_masked,extent=(-R,R,-R,R),origin='lower')
     #im=ax.imshow(np.transpose(self.grid_phis[0]),extent=(-R,R,-R,R),origin='lower')
     #ax.plot(electron.x,electron.y,c='r',marker='o',ms=2)
     fig.colorbar(im)
@@ -47,19 +48,42 @@ def plot_result(R, data, name):
     plt.savefig(name)
     plt.close(fig)
 
+def run_reconstruction(binary, grid_size, n_samples, snr, 
+							seed, r, phi, w0, N, weighted=1):
+                                
+    cmd = binary + str(grid_size) + " "\
+                + str(n_samples) + " " + str(snr) + " "\
+                + str(seed) + " " + str(weighted) + " "\
+                + str(r) + " " + str(phi) + " " + str(w0) + " "\
+                + str(N) + " >result.out"
+    
+    os.system(cmd)
+                
+    data = np.loadtxt("result.out")
+    os.system("rm result.out")
+    
+    data = data.reshape((-1, grid_size, grid_size))
+    
+    return data
 
 def main(args):
+	
+    binary = "../../bin/reconstruction "
+    R=5
+    r=3.5
+    w0=26.0016
+    phi = 0
+    snr=0.5
+    seed=-1
+    n_samples=1000
+    grid_size=100
+    N = 30
 
-    parser = argparse.ArgumentParser(description='Plots the beamforming result')
-    parser.add_argument('input', metavar='path', type=str,
-                       help='path for the input')
-    parser.add_argument('R', metavar='radius', type=float,
-                        help='Radius for the plot')
-    args = parser.parse_args()
-    inFile = args.input
-    R=args.R
-
-    data = np.loadtxt(inFile)
+    data = run_reconstruction(binary, grid_size, n_samples, snr, seed, r, phi, w0, N)
+    
+    print(data.shape)
+    plot_result(R, data[438], "beamforming_rec_test.pdf")
+    
     data[data==-1]=0
     
     ind = (np.isfinite(data))^True
@@ -75,8 +99,7 @@ def main(args):
     fig.colorbar(im)
     plt.savefig("beamforming_freq_test.pdf")
     plt.close(fig)
-    
-    #plot_result(R, np.abs(data_freq), "beamforming_freq_test.pdf")
+
 
     data = np.loadtxt("beamforming_rec_ref.dat")
     plot_result(R, data, "beamforming_rec_ref.pdf")
