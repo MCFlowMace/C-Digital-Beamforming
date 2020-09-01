@@ -136,27 +136,3 @@ void run_test_f(int grid_size, int n_samples,float snr, int seed, bool weighted,
 {
 	run_test<float>(grid_size, n_samples, snr, seed, weighted, e_r, e_phi, f0, N);
 }
-
-int main(int argc, char **argv)
-{
-
-    if(argc!=10) {
-        std::cerr << "args: [grid_size] [N_samples] [snr] [seed] [weighted] [r] [phi] [w0] [N]!" << std::endl;
-        exit(0);
-    }
-    
-    int grid_size = std::atoi(argv[1]);
-    int n_samples = std::atoi(argv[2]);
-    float snr = std::stod(argv[3]);
-    int seed = std::atoi(argv[4]);
-    bool weighted = std::atoi(argv[5]);
-	float e_r = std::stof(argv[6]);
-    float e_phi = std::stof(argv[7]);
-    float f0 = std::stof(argv[8]);
-    float N = std::atoi(argv[9]);
-
-	//todo add arg for double precision
-	
-	run_test_f(grid_size, n_samples, snr, seed, weighted, e_r, e_phi, f0, N);
-}
-

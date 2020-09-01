@@ -4,13 +4,13 @@ ARCH=sm_70
 
 #c++ compiler options
 GCC=g++
-GCCFLAGS= -O3 -std=c++17 -fopenmp -D$(EXEC)
+GCCFLAGS= -O3 -std=c++17 -fopenmp -D$(EXEC) -fPIC
 
 #-ffast-math
 
 #NVCC options
 NVCC=nvcc
-NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda --use_fast_math -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp
+NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda --use_fast_math -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp -Xcompiler -fPIC
 
 #libpacker
 LIBPACK=ar
@@ -30,7 +30,7 @@ LIBDIR = lib
 INCLUDES = -I $(INCDIR)
 LIB_DIR = -L
 
-TARGET = $(LIBDIR)/beamforming.a
+TARGET = $(LIBDIR)/libbeamforming.a
 
 #armadillo for FFT
 LIBS = -larmadillo
