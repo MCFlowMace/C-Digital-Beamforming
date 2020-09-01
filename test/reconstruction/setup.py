@@ -2,6 +2,7 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize, build_ext
 import os
+import numpy
 
 NVCC='nvcc'
 
@@ -32,7 +33,7 @@ examples_extension = Extension(
     sources=["pyreconstruction.pyx"],
     libraries=["beamforming","armadillo","gomp","cudart_static","rt"],
     library_dirs=["../../lib","/usr/local/cuda-10.2/lib64"],
-    include_dirs=["../../include"],
+    include_dirs=["../../include", numpy.get_include()],
     language='c++',
     extra_compile_args={ NVCC: ["-O3", "-DARMA_ALLOW_FAKE_GCC", "-Xcompiler", "-fopenmp", "-Xcompiler", "-fPIC"]}
 )

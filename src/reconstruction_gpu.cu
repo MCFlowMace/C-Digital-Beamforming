@@ -494,6 +494,15 @@ void Reconstruction_GPU<value_t>::print(unsigned int packet)
 }
 
 template <typename value_t>
+void Reconstruction_GPU<value_t>::copy_res(value_t* dest)
+{
+	int grid_size = this->grid_size;
+	int bins = this->bins;
+	int n_packets = this->n_packets;
+	std::memcpy(dest, this->reconstructed_H, grid_size*grid_size*bins*n_packets*sizeof(value_t));
+}
+
+template <typename value_t>
 void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& samples)
 {
 	std::cerr << "run" << std::endl;

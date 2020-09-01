@@ -25,4 +25,4 @@
 #pragma once
 
 void run_test_f(int grid_size, int n_samples,float snr, int seed, bool weighted, 
-				float e_r, float e_phi, float f0, int N);
+				float e_r, float e_phi, float f0, int N, float* dest);

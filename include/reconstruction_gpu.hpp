@@ -51,6 +51,7 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
         virtual unsigned int get_max_bin(unsigned int packet);
         
         void print(unsigned int packet);
+        void copy_res(value_t* dest);
 
     private:
 

@@ -44,7 +44,7 @@
 
 template <typename value_t>
 void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted, 
-				value_t e_r, value_t e_phi, value_t f0, int N)
+				value_t e_r, value_t e_phi, value_t f0, int N, value_t* dest)
 {
 	Simulation_Settings<value_t> settings;
 
@@ -98,21 +98,10 @@ void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted,
 
 	rec.run(data);
 	
+	/*
     unsigned int index_max = rec.get_max_bin(0);
 	float delta_f = frequency[1]-frequency[0];
 	
-   /*
-	unsigned int index_max = 0;
-	
-	
-	for(int i=0; i<frequency.n_elem; ++i) {
-		value_t w =	settings.w_mix+(frequency[i]+delta_f/2)*2*M_PI;
-		if(w>settings.w0) {
-			index_max = i;
-			break;
-		}
-	} */
-		
     float max_val = rec.get_max_val(index_max, 0);
     
     std::cerr << " max ind: " <<  index_max << std::endl;
@@ -122,17 +111,16 @@ void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted,
 	std::cerr << "frequency: " << (settings.w_mix/(2*M_PI)+frequency[index_max])/1e9
 				<< " deltaf: " << delta_f << std::endl;
 
-    auto img = rec.get_img(0, index_max);
+    auto img = rec.get_img(0, index_max); 
 
-    //img.print();
-    rec.print(0);
-    rec.print(1);
+    img.print(); */
+    rec.copy_res(dest);
 
 	std::cerr << "done!" << std::endl;
 }
 
 void run_test_f(int grid_size, int n_samples,float snr, int seed, bool weighted, 
-				float e_r, float e_phi, float f0, int N)
+				float e_r, float e_phi, float f0, int N, float* dest)
 {
-	run_test<float>(grid_size, n_samples, snr, seed, weighted, e_r, e_phi, f0, N);
+	run_test<float>(grid_size, n_samples, snr, seed, weighted, e_r, e_phi, f0, N, dest);
 }
