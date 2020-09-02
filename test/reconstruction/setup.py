@@ -35,7 +35,8 @@ examples_extension = Extension(
     library_dirs=["../../lib","/usr/local/cuda-10.2/lib64"],
     include_dirs=["../../include", numpy.get_include()],
     language='c++',
-    extra_compile_args={ NVCC: ["-O3", "-DARMA_ALLOW_FAKE_GCC", "-Xcompiler", "-fopenmp", "-Xcompiler", "-fPIC"]}
+    extra_compile_args={ NVCC: ["-O3", "-DARMA_ALLOW_FAKE_GCC", "-Xcompiler", "-fopenmp", "-Xcompiler", "-fPIC"]},
+    define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
 )
 setup(
     name="pyreconstruction",
