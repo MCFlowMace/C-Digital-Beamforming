@@ -26,8 +26,8 @@
 #include <vector>
 #include <armadillo>
 
-#include "event.hpp"
-#include "data_packet.hpp"
+#include "beamforming/event.hpp"
+#include "beamforming/data_packet.hpp"
 
 template<typename value_t>
 struct Simulation_Settings

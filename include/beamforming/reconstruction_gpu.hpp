@@ -24,10 +24,10 @@
 #pragma once
 
 #include <armadillo>
-#include "antenna_array.hpp"
-#include "grid.hpp"
-#include "hpc_helpers.hpp"
-#include "reconstruction.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/grid.hpp"
+#include "utility/hpc_helpers.hpp"
+#include "beamforming/reconstruction.hpp"
 
 template <typename value_t>
 class Reconstruction_GPU : public Reconstruction<value_t> {

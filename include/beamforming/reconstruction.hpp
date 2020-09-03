@@ -24,9 +24,9 @@
 #pragma once
 
 #include <armadillo>
-#include "antenna_array.hpp"
-#include "grid.hpp"
-#include "hpc_helpers.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/grid.hpp"
+#include "utility/hpc_helpers.hpp"
 
 template <typename value_t>
 class Reconstruction {

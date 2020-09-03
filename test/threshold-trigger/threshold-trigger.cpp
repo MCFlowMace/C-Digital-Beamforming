@@ -21,8 +21,8 @@
  *
  */
  
-#include "reconstruction.hpp"
-#include "reconstruction_gpu.hpp"
+#include "beamforming/reconstruction.hpp"
+#include "beamforming/reconstruction_gpu.hpp"
  
 #ifdef PRECISION
 	typedef double value_t;
@@ -42,17 +42,16 @@
 #include <cstdlib>
 #include <memory>
 
-#include "electron.hpp"
-#include "antenna.hpp"
-#include "antenna_array.hpp"
-#include "simulation.hpp"
-#include "hpc_helpers.hpp"
+#include "beamforming/antenna.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/simulation.hpp"
+#include "utility/hpc_helpers.hpp"
 
-#include "threshold_trigger.hpp"
-#include "binary_classifier.hpp"
-#include "ROC_evaluator.hpp"
+#include "beamforming/threshold_trigger.hpp"
+#include "beamforming/binary_classifier.hpp"
+#include "beamforming/ROC_evaluator.hpp"
 
-#include "confusion_matrix.hpp"
+#include "beamforming/confusion_matrix.hpp"
 
 int main(int argc, char **argv)
 {

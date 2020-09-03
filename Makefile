@@ -26,7 +26,7 @@ BUILDDIR = build
 OBJDIR = $(BUILDDIR)/obj
 BINDIR = $(BUILDDIR)/bin
 TESTDIR = test
-LIBDIR = lib
+LIBDIR = lib/beamforming
 
 INCLUDES = -I $(INCDIR)
 #LIB_DIR = -L

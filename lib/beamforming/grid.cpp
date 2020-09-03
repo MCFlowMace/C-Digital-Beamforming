@@ -21,8 +21,8 @@
  *
  */
 
-#include "grid.hpp"
-#include "utility_macros.hpp"
+#include "beamforming/grid.hpp"
+#include "utility/utility_macros.hpp"
 
 template <typename value_t>
 Grid<value_t>::Grid(int grid_size):

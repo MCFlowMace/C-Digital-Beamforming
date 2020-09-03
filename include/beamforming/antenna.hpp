@@ -27,9 +27,8 @@
 #include <cmath>
 #include <vector>
 
-#include "electron.hpp"
-#include "data_packet.hpp"
-#include "event.hpp"
+#include "beamforming/data_packet.hpp"
+#include "beamforming/event.hpp"
 
 template <typename value_t>
 class Antenna {

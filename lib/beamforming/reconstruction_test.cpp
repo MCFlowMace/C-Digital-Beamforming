@@ -21,8 +21,8 @@
  *
  */
 
-#include "reconstruction.hpp"
-#include "reconstruction_gpu.hpp"
+#include "beamforming/reconstruction.hpp"
+#include "beamforming/reconstruction_gpu.hpp"
  
  /*
 #ifdef USE_GPU
@@ -36,11 +36,10 @@
 #include <armadillo>
 #include <cstdlib>
 
-#include "electron.hpp"
-#include "antenna.hpp"
-#include "antenna_array.hpp"
-#include "simulation.hpp"
-#include "hpc_helpers.hpp"
+#include "beamforming/antenna.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/simulation.hpp"
+#include "utility/hpc_helpers.hpp"
 
 template <typename value_t>
 void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted, 

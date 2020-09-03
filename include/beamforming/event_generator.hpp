@@ -24,7 +24,7 @@
 #pragma once
 
 #include <random>
-#include "event.hpp"
+#include "beamforming/event.hpp"
 
 template <typename value_t>
 class Event_Generator

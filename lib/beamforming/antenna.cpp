@@ -22,8 +22,8 @@
  */
 
 
-#include "antenna.hpp"
-#include "utility_macros.hpp"
+#include "beamforming/antenna.hpp"
+#include "utility/utility_macros.hpp"
 
 template<typename value_t>
 value_t emission(value_t t, value_t w, value_t phi)

@@ -4,7 +4,7 @@ cimport numpy
 
 from libcpp cimport bool
 
-cdef extern from "reconstruction_test.h":
+cdef extern from "reconstruction_test.hpp":
     void run_test_f(int, int, float, int, bool,	float, float, float, int, float*)
 
 def py_run(int grid_size, int n_samples,float snr, int seed, bool weighted, 

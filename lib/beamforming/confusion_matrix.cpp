@@ -22,7 +22,7 @@
  */
 
 
-#include "confusion_matrix.hpp"
+#include "beamforming/confusion_matrix.hpp"
 
 #include <stdexcept>
 #include <iostream>

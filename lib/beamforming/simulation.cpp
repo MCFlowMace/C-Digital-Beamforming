@@ -22,10 +22,10 @@
  */
 
 
-#include "simulation.hpp"
-#include "event_generator.hpp"
-#include "antenna_array.hpp"
-#include "hpc_helpers.hpp"
+#include "beamforming/simulation.hpp"
+#include "beamforming/event_generator.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "utility/hpc_helpers.hpp"
 
 template <typename value_t>
 Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):

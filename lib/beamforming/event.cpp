@@ -24,7 +24,7 @@
 #define DW 0.3*2*M_PI //300 MHz/s
 #define WK 2*M_PI/(4*1e-3)   //1 circumvolution every 4ms (magnetron motion)
 
-#include "event.hpp"
+#include "beamforming/event.hpp"
 
 #include <utility>
 #include <iostream>

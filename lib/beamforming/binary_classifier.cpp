@@ -1,5 +1,5 @@
 /*
- * antenna_array.cpp
+ * binary_classifier.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,28 +21,25 @@
  *
  */
 
-#include "antenna_array.hpp"
-#include "utility_macros.hpp"
+#define DEFINE_TEMPLATE_CLASS(name, type) template class name<type>
+#define DEFINE_TEMPLATES(name)\
+    DEFINE_TEMPLATE_CLASS(name, float);\
+    DEFINE_TEMPLATE_CLASS(name, double);
 
-template <typename value_t>
-Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
-                                        value_t wmix, value_t sample_rate,
-                                        long seed):
-N(N),
-R(R),
-wmix(wmix)
+#include "beamforming/binary_classifier.hpp"
+
+template <typename input_t>
+std::vector<bool> Binary_Classifier<input_t>::classify(
+                                                const std::vector<input_t>& x) const
 {
-	if (seed<0)
-		arma::arma_rng::set_seed_random();
-	else
-		arma::arma_rng::set_seed(seed);
+    std::vector<bool> label(x.size());
 
-    for(int i=0; i<N; ++i) {
-        value_t phi=(value_t)i/N*2*M_PI;
-        value_t x=R*cos(phi);
-        value_t y=R*sin(phi);
-        antennas.push_back(Antenna<value_t>(snr, sample_rate, wmix, x, y));
+    for(int i=0; i<x.size(); ++i) {
+        label[i] = this->classify(x[i]);
     }
+
+    return label;
 }
 
-DEFINE_TEMPLATES(Antenna_Array)
+
+DEFINE_TEMPLATES(Binary_Classifier)

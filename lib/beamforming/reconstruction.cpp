@@ -23,8 +23,8 @@
  
 #include <cfloat>
 
-#include "reconstruction.hpp"
-#include "utility_macros.hpp"
+#include "beamforming/reconstruction.hpp"
+#include "utility/utility_macros.hpp"
 
 #include <stdexcept>
 #include <string>

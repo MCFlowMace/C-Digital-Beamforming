@@ -21,7 +21,7 @@
  *
  */
 
-#include "event_generator.hpp"
+#include "beamforming/event_generator.hpp"
 #include <chrono>
 #include <random>
 #include <iostream>

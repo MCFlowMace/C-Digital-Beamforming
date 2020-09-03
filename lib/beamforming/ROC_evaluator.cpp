@@ -23,8 +23,8 @@
 
 #include <stdexcept>
 
-#include "ROC_evaluator.hpp"
-#include "utility_macros.hpp"
+#include "beamforming/ROC_evaluator.hpp"
+#include "utility/utility_macros.hpp"
 
 
 double evaluate_TPR(const std::vector<bool>& test,

@@ -1,5 +1,5 @@
 /*
- * binary_classifier.cpp
+ * ROC_evaluator.hpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,25 +21,35 @@
  *
  */
 
-#define DEFINE_TEMPLATE_CLASS(name, type) template class name<type>
-#define DEFINE_TEMPLATES(name)\
-    DEFINE_TEMPLATE_CLASS(name, float);\
-    DEFINE_TEMPLATE_CLASS(name, double);
+#pragma once
 
-#include "binary_classifier.hpp"
+#include <memory>
+#include <armadillo>
+
+#include <vector>
+#include "beamforming/binary_classifier.hpp"
 
 template <typename input_t>
-std::vector<bool> Binary_Classifier<input_t>::classify(
-                                                const std::vector<input_t>& x) const
+class ROC_Evaluator
 {
-    std::vector<bool> label(x.size());
+    public:
 
-    for(int i=0; i<x.size(); ++i) {
-        label[i] = this->classify(x[i]);
-    }
+        double get_FPR();
+        double get_TPR();
+        const std::vector<bool>& get_inference();
 
-    return label;
-}
+        void evaluate(const Binary_Classifier<input_t>& classifier,
+                        const std::vector<input_t>& input,
+                        const std::vector<bool>& label);
 
+        arma::Mat<double> ROC_curve(
+                    const std::vector<std::unique_ptr<Binary_Classifier<input_t>>>& classifiers,
+                    const std::vector<input_t>& input,
+                    const std::vector<bool>& label);
 
-DEFINE_TEMPLATES(Binary_Classifier)
+    private:
+
+        double FPR;
+        double TPR;
+        std::vector<bool> inference;
+};

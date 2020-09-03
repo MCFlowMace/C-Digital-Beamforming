@@ -27,10 +27,10 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
-#include "hpc_helpers.hpp"
-#include "data_packet.hpp"
-#include "reconstruction_gpu.hpp"
-#include "utility_macros.hpp"
+#include "utility/hpc_helpers.hpp"
+#include "beamforming/data_packet.hpp"
+#include "beamforming/reconstruction_gpu.hpp"
+#include "utility/utility_macros.hpp"
 
 //speed of light in cm/s
 #define SPEED_OF_LIGHT 29979245800

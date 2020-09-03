@@ -1,5 +1,5 @@
 /*
- * antenna_array.hpp
+ * threshold_trigger.hpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -22,21 +22,20 @@
  */
 
 #pragma once
-
-#include "antenna.hpp"
-#include <cmath>
+#include "beamforming/binary_classifier.hpp"
 
 template <typename value_t>
-class Antenna_Array {
-
+class Threshold_Trigger : public Binary_Classifier<value_t>
+{
     public:
-        int N;
-        value_t R;
-        std::vector<Antenna<value_t>> antennas;
-        value_t wmix;
 
-        Antenna_Array(int N, value_t R, value_t snr,
-                      value_t wmix, value_t sample_rate, long seed=-1);
+        bool classify(value_t x) const override;
+        Threshold_Trigger(value_t threshold);
+        Threshold_Trigger() = default;
+
+    private:
+
+        value_t threshold;
+
 };
-
 

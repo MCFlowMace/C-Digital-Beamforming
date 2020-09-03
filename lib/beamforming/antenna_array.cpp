@@ -1,5 +1,5 @@
 /*
- * threshold_trigger.hpp
+ * antenna_array.cpp
  *
  * Copyright 2020 Florian Thomas <>
  *
@@ -21,21 +21,28 @@
  *
  */
 
-#pragma once
-#include "binary_classifier.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "utility/utility_macros.hpp"
 
 template <typename value_t>
-class Threshold_Trigger : public Binary_Classifier<value_t>
+Antenna_Array<value_t>::Antenna_Array(int N, value_t R, value_t snr,
+                                        value_t wmix, value_t sample_rate,
+                                        long seed):
+N(N),
+R(R),
+wmix(wmix)
 {
-    public:
+	if (seed<0)
+		arma::arma_rng::set_seed_random();
+	else
+		arma::arma_rng::set_seed(seed);
 
-        bool classify(value_t x) const override;
-        Threshold_Trigger(value_t threshold);
-        Threshold_Trigger() = default;
+    for(int i=0; i<N; ++i) {
+        value_t phi=(value_t)i/N*2*M_PI;
+        value_t x=R*cos(phi);
+        value_t y=R*sin(phi);
+        antennas.push_back(Antenna<value_t>(snr, sample_rate, wmix, x, y));
+    }
+}
 
-    private:
-
-        value_t threshold;
-
-};
-
+DEFINE_TEMPLATES(Antenna_Array)

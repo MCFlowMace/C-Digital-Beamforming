@@ -21,8 +21,8 @@
  *
  */
 
-#include "data_packet.hpp"
-#include "utility_macros.hpp"
+#include "beamforming/data_packet.hpp"
+#include "utility/utility_macros.hpp"
 
 template <typename value_t>
 Data_Packet<value_t>::Data_Packet(arma::Col<value_t>&& time,
