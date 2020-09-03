@@ -22,41 +22,44 @@ LIBPACK_FLAGS = rsv
 
 SRCDIR = src
 INCDIR = include
-OBJDIR = build
-BINDIR = bin
+BUILDDIR = build
+OBJDIR = $(BUILDDIR)/obj
+BINDIR = $(BUILDDIR)/bin
 TESTDIR = test
 LIBDIR = lib
 
 INCLUDES = -I $(INCDIR)
-LIB_DIR = -L
+#LIB_DIR = -L
 
-TARGET = $(LIBDIR)/libbeamforming.a
+TARGET = $(BUILDDIR)/lib/libbeamforming.a
 
 #armadillo for FFT
 LIBS = -larmadillo
 
-SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
-OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+SOURCES  := $(wildcard $(LIBDIR)/*.cpp)
+OBJECTS  := $(SOURCES:$(LIBDIR)/%.cpp=$(OBJDIR)/%.o)
 
-SOURCES_CU  := $(wildcard $(SRCDIR)/*.cu)
-OBJECTS_CU  := $(SOURCES_CU:$(SRCDIR)/%.cu=$(OBJDIR)/%.cu.o)
+SOURCES_CU  := $(wildcard $(LIBDIR)/*.cu)
+OBJECTS_CU  := $(SOURCES_CU:$(LIBDIR)/%.cu=$(OBJDIR)/%.cu.o)
 
 REBUILDABLES = $(OBJECTS) $(OBJECTS_CU) $(TARGET)
 
 
 #build the library
 $(TARGET): $(OBJECTS) $(OBJECTS_CU)
+	@mkdir -p $(BINDIR)
+	@mkdir -p $(@D)
 	@$(LIBPACK) $(LIBPACK_FLAGS) $@ $(OBJECTS) $(OBJECTS_CU)
 	@echo "Library build!"
 
 # Compile C++ source files to object files:
-$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+$(OBJECTS): $(OBJDIR)/%.o : $(LIBDIR)/%.cpp
 	@mkdir -p $(@D)
 	@$(GCC) $(INCLUDES) $(GCCFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
 # Compile CUDA source files to object files:
-$(OBJECTS_CU): $(OBJDIR)/%.cu.o : $(SRCDIR)/%.cu
+$(OBJECTS_CU): $(OBJDIR)/%.cu.o : $(LIBDIR)/%.cu
 	@mkdir -p $(@D)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
@@ -98,6 +101,6 @@ measure-snr: $(TARGET)
 
 clean :
 	@echo " Cleaning...";
-	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -rf $(OBJDIR) $(BINDIR)/*
+	@$(RM) -rf $(BUILDDIR) ;
 
 .PHONY: clean
