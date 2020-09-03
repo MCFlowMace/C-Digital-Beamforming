@@ -51,18 +51,18 @@ class Reconstruction_GPU : public Reconstruction<value_t> {
         virtual unsigned int get_max_bin(unsigned int packet);
         
         void print(unsigned int packet);
-        void copy_res(value_t* dest);
+        void copy_res(std::complex<value_t>* dest);
 
     private:
 
         value_t* time_delays_D;
         value_t* phis_D;
         value_t* frequencies_D;
-        value_t* reconstructed_D;
+        std::complex<value_t>* reconstructed_D;
         std::complex<value_t>* samples_D;
         
         std::complex<value_t>* samples_H;
-        value_t* reconstructed_H;
+        std::complex<value_t>* reconstructed_H;
         
         void init_gpu();
 };

@@ -129,7 +129,7 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 } */
 
 template <typename value_t>
-__device__ inline value_t weighted_beamforming(value_t const fc, int const N, 
+__device__ inline thrust::complex<value_t> weighted_beamforming(value_t const fc, int const N, 
 												int const grid_size, 
 												int const packet, int const bins,
 												int const i, int const j, int const k,
@@ -149,11 +149,11 @@ __device__ inline value_t weighted_beamforming(value_t const fc, int const N,
 		accum += samples[(packet*N+l)*bins+k]*phase/t;
 		
 	}
-	return thrust::norm(accum)*SPEED_OF_LIGHT/A;
+	return accum*SPEED_OF_LIGHT/A; //thrust::norm(accum)*SPEED_OF_LIGHT/A;
 }
 
 template <typename value_t>
-__device__ inline value_t beamforming(value_t const fc, int const N, 
+__device__ inline thrust::complex<value_t> beamforming(value_t const fc, int const N, 
 										int const grid_size, 
 										int const packet, int const bins,
 										int const i, int const j, int const k,
@@ -173,13 +173,13 @@ __device__ inline value_t beamforming(value_t const fc, int const N,
 		accum += samples[(packet*N+l)*bins+k]*phase;
 		
 	}
-	return thrust::norm(accum);			
+	return accum; //thrust::norm(accum);			
 }
 
 template <typename value_t, bool weighted>
 __global__ void reconstruction_red(thrust::complex<value_t>* samples,
                                 value_t* frequencies, value_t* time_delays,
-                                value_t* phis, value_t* rec, value_t R,
+                                value_t* phis, thrust::complex<value_t>* rec, value_t R,
                                 value_t wmix, int bins, int grid_size, int N,
                                 int packet)
 {
@@ -198,6 +198,8 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 		int k = tid%bins; //frequency
         int i = (tid/bins)%grid_size; //y
         int j = tid/(bins*grid_size); //x
+        
+        rec[((packet*grid_size+i)*grid_size+j)*bins+k] = thrust::complex<value_t>(-1);
 
         value_t x = (-1+(value_t)(2*j+1)/grid_size)*R; //coords[j];
         value_t y = (-1+(value_t)(2*i+1)/grid_size)*R; //coords[i];
@@ -207,7 +209,7 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 			
 			value_t fc = 2*M_PI*frequencies[k] + wmix; //maybe to shared memory
 			//value_t f = wmix/2;
-			value_t result;
+			thrust::complex<value_t> result;
             
             
             if(weighted) {
@@ -340,7 +342,7 @@ unsigned int Reconstruction_GPU<value_t>::get_max_bin(unsigned int packet)
 		for(unsigned int j=0; j<grid_size; ++j) {
 			for(unsigned int l=0; l<grid_size; ++l) {
 				
-				value_t val = reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i];
+				value_t val = std::abs(reconstructed_H[((packet*grid_size+j)*grid_size+l)*bins+i]);
 				
 				//std::cerr << i << " " << val << " " << max_val << std::endl;
 				if(val>max_val && !std::isinf(val)) {
@@ -409,14 +411,14 @@ void Reconstruction_GPU<value_t>::init_gpu()
 				<< (grid_size*grid_size*bins*n_packets*sizeof(value_t)/1e9) 
 				<< "GB of unpinned host memory" << std::endl;
 	//using pinned memory results in frequent errors here for whatever reason ...
-	this->reconstructed_H=(value_t*) malloc(grid_size*grid_size*bins*n_packets*sizeof(value_t));
+	this->reconstructed_H=(std::complex<value_t>*) malloc(grid_size*grid_size*bins*n_packets*sizeof(std::complex<value_t>));
 	//cudaMallocHost(&(this->reconstructed_H), 
 	//			grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
 				
 	cudaMalloc(&(this->samples_D), 
 				n_packets*N*bins*sizeof(thrust::complex<value_t>));		CUERR
 	cudaMalloc(&(this->reconstructed_D), 
-				grid_size*grid_size*bins*n_packets*sizeof(value_t));	CUERR
+				grid_size*grid_size*bins*n_packets*sizeof(thrust::complex<value_t>));	CUERR
 				
 	cudaMalloc(&(this->frequencies_D), bins*sizeof(value_t)); 			CUERR
 	cudaMalloc(&(this->time_delays_D), 
@@ -467,7 +469,7 @@ arma::Mat<value_t> Reconstruction_GPU<value_t>::get_img(unsigned int packet,
 
 	for(int i=0; i<grid_size; ++i) {
 		for(int j=0; j<grid_size; ++j) {
-			img(j,i) = reconstructed_H[((packet*grid_size+i)*grid_size+j)*bins+bin];
+			img(j,i) = std::abs(reconstructed_H[((packet*grid_size+i)*grid_size+j)*bins+bin]);
 
 		}
 	}
@@ -494,12 +496,12 @@ void Reconstruction_GPU<value_t>::print(unsigned int packet)
 }
 
 template <typename value_t>
-void Reconstruction_GPU<value_t>::copy_res(value_t* dest)
+void Reconstruction_GPU<value_t>::copy_res(std::complex<value_t>* dest)
 {
 	int grid_size = this->grid_size;
 	int bins = this->bins;
 	int n_packets = this->n_packets;
-	std::memcpy(dest, this->reconstructed_H, grid_size*grid_size*bins*n_packets*sizeof(value_t));
+	std::memcpy(dest, this->reconstructed_H, grid_size*grid_size*bins*n_packets*sizeof(std::complex<value_t>));
 }
 
 template <typename value_t>
@@ -560,9 +562,9 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& 
     //TIMERSTOP(COPY_GPU)
     TIMERBW(memsize_samples, COPY_GPU)
 	
-	thrust::device_ptr<value_t> rec_thrust =
-									thrust::device_pointer_cast(reconstructed_D);  
-    thrust::fill(rec_thrust, rec_thrust+rec_size, value_t(-1));			CUERR
+	//~ thrust::device_ptr<value_t> rec_thrust =
+									//~ thrust::device_pointer_cast(reconstructed_D);  
+    //~ thrust::fill(rec_thrust, rec_thrust+rec_size, thrust::complex<value_t>(-1));			CUERR
 	
     int threads = 512;
     int tasks=grid_size*grid_size*bins;
@@ -581,21 +583,21 @@ void Reconstruction_GPU<value_t>::run(const std::vector<std::complex<value_t>>& 
 		for(int packet=0; packet<n_packets; ++packet) {
 			reconstruction_red<value_t, true><<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
 												frequencies_D, time_delays_D,
-												phis_D, reconstructed_D, this->R,
+												phis_D, (thrust::complex<value_t>*) reconstructed_D, this->R,
 												this->wmix, bins, grid_size, N, packet);   CUERR
 		}
 	} else {
 		for(int packet=0; packet<n_packets; ++packet) {
 			reconstruction_red<value_t, false><<<blocks, threads>>>((thrust::complex<value_t>*)samples_D,
 												frequencies_D, time_delays_D,
-												phis_D, reconstructed_D, this->R,
+												phis_D, (thrust::complex<value_t>*) reconstructed_D, this->R,
 												this->wmix, bins, grid_size, N, packet);   CUERR
 		}
 	}
 	TIMERSTOP(KERNELS)
 
     //copy back result
-    size_t memsize_res = rec_size*sizeof(value_t);
+    size_t memsize_res = rec_size*sizeof(thrust::complex<value_t>);
     TIMERSTART(COPY_BACK)
     //thrust::copy(reconstructed_D.begin(), reconstructed_D.end(),
     //                reconstructed.begin());                             CUERR

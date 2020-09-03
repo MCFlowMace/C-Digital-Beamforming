@@ -44,7 +44,7 @@
 
 template <typename value_t>
 void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted, 
-				value_t e_r, value_t e_phi, value_t f0, int N, value_t* dest)
+				value_t e_r, value_t e_phi, value_t f0, int N, std::complex<value_t>* dest)
 {
 	Simulation_Settings<value_t> settings;
 
@@ -120,7 +120,7 @@ void run_test(int grid_size, int n_samples,value_t snr, int seed, bool weighted,
 }
 
 void run_test_f(int grid_size, int n_samples,float snr, int seed, bool weighted, 
-				float e_r, float e_phi, float f0, int N, float* dest)
+				float e_r, float e_phi, float f0, int N, std::complex<float>* dest)
 {
 	run_test<float>(grid_size, n_samples, snr, seed, weighted, e_r, e_phi, f0, N, dest);
 }
