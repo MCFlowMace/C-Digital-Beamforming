@@ -5,6 +5,8 @@ import os
 import numpy
 
 NVCC='nvcc'
+build_dir = 'build'
+src_dir = 'lib'
 
 def customize_compiler(self):
     """Modified from: https://github.com/rmcgibbo/npcuda-example/tree/master/cython"""
@@ -29,17 +31,17 @@ class custom_build_ext(build_ext):
 
 
 examples_extension = Extension(
-    name="pyreconstruction",
-    sources=["pyreconstruction.pyx"],
+    name="pybeamforming",
+    sources=[src_dir+"/pybeamforming/pybeamforming.pyx"],
     libraries=["beamforming","armadillo","gomp","cudart_static","rt"],
-    library_dirs=["../../lib","/usr/local/cuda-10.2/lib64"],
-    include_dirs=["../../include", numpy.get_include()],
+    library_dirs=[build_dir+"/lib","/usr/local/cuda-10.2/lib64"],
+    include_dirs=["include", numpy.get_include()],
     language='c++',
     extra_compile_args={ NVCC: ["-O3", "-DARMA_ALLOW_FAKE_GCC", "-Xcompiler", "-fopenmp", "-Xcompiler", "-fPIC"]},
     define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
 )
 setup(
-    name="pyreconstruction",
+    name="pybeamforming",
     ext_modules=cythonize([examples_extension], compiler_directives={'language_level' : "3"}), 
     cmdclass={'build_ext': custom_build_ext}
 )

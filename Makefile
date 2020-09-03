@@ -6,6 +6,8 @@ ARCH=sm_70
 GCC=g++
 GCCFLAGS= -O3 -std=c++17 -fopenmp -D$(EXEC) -fPIC
 
+PYTHON=python
+
 #-ffast-math
 
 #NVCC options
@@ -70,6 +72,13 @@ $(OBJECTS_CU): $(OBJDIR)/%.cu.o : $(LIBDIR)/%.cu
 #	@echo "Linking complete!"
 
 # Tests
+
+pybeamforming: $(TARGET)
+	@$(PYTHON) lib/pybeamforming/setup.py build_ext --inplace
+	@mv pybeamforming.*.so build/lib/
+	@rm -rf build/temp*
+	@rm -f lib/pybeamforming/pybeamforming.cpp
+	@echo "Python module complete!"
 	
 reconstruction: $(TARGET)
 	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(TARGET) $(LIBS) -o $(BINDIR)/reconstruction
