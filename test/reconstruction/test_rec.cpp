@@ -121,7 +121,7 @@
 int main(int argc, char **argv)
 {
 	
-	Simulation_Settings<float> settings{Default_Settings};
+	Simulation_Settings<float> settings{};
 	
 	int n_packets = 2;
 	int grid_size = 100;

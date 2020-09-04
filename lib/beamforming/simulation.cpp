@@ -26,32 +26,32 @@
 #include "beamforming/event_generator.hpp"
 #include "beamforming/antenna_array.hpp"
 #include "utility/hpc_helpers.hpp"
+#include "utility/utility_macros.hpp"
 
-const Simulation_Settings<float> Default_Settings{
-	    
-    1, //n_events
-    2*M_PI*24.6*1e9f, //w_min
-    2*M_PI*26.2*1e9f, // w_max
-    5.0f, //R
+//using default values here
+template <typename value_t>
+Simulation_Settings<value_t>::Simulation_Settings():
+n_events{1}, //n_events
+w_min{2*M_PI*24.6*1e9}, //w_min
+w_max{2*M_PI*26.2*1e9}, // w_max
+R{5.0}, //R
 	
-	0.00032,	//run_duration 1000 packets in default
-    1/(2*1e-4f), //mean_event_lifetime
-    0.5f, //trap_efficiency
-    -1, //seed
+run_duration{0.00032},	//run_duration 1000 packets in default
+mean_event_lifetime{1/(2*1e-4)}, //mean_event_lifetime
+trap_efficiency{0.5}, //trap_efficiency
+seed{-1}, //seed
 						
-	false,				//manual
-	3.5f,				//e_r
-	0.0f,				//e_phi
-	2*M_PI*25.8e9f,		//w0
+manual{false},				//manual
+e_r{3.5},				//e_r
+e_phi{0.0},				//e_phi
+w0{2*M_PI*25.8e9},		//w0
 							
-	30,						//N
-	1.0f,					//snr
-	3.2*1e9f,				//sample_rate
-	2*M_PI*24.6*1e9f,		//w_mix
-	1024,					//n_samples
-
-   // settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
-};
+N{30},						//N
+snr{1.0},					//snr
+sample_rate{3.2*1e9},				//sample_rate
+w_mix{2*M_PI*24.6*1e9},		//w_mix
+n_samples{1024}					//n_samples
+{}
 
 template <typename value_t>
 Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):
@@ -212,5 +212,5 @@ std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
     return data;
 }
 
-template class Simulation<float>;
-template class Simulation<double>;
+DEFINE_TEMPLATES(Simulation)
+DEFINE_TEMPLATES(Simulation_Settings)

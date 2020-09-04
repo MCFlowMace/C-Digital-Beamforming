@@ -30,34 +30,35 @@
 #include "beamforming/data_packet.hpp"
 
 template<typename value_t>
-struct Simulation_Settings
+class Simulation_Settings
 {
 
-    //event generation
-    int n_events;
-    value_t w_min;
-    value_t w_max;
-    value_t R;
-    value_t run_duration;
-    value_t mean_event_lifetime;
-    value_t trap_efficiency;
-    long seed;
-    
-    //for non-random events
-    bool manual;
-    value_t e_r;
-    value_t e_phi;
-    value_t w0;
+	public:
+		//event generation
+		int n_events;
+		value_t w_min;
+		value_t w_max;
+		value_t R;
+		value_t run_duration;
+		value_t mean_event_lifetime;
+		value_t trap_efficiency;
+		long seed;
+		
+		//for non-random events
+		bool manual;
+		value_t e_r;
+		value_t e_phi;
+		value_t w0;
 
-    //event observation and data generation
-    int N; //antennas
-    value_t snr;
-    value_t sample_rate;
-    value_t w_mix;
-    int n_samples; //for fourier transform
+		//event observation and data generation
+		int N; //antennas
+		value_t snr;
+		value_t sample_rate;
+		value_t w_mix;
+		int n_samples; //for fourier transform
+		
+		Simulation_Settings();
 };
-
-extern const Simulation_Settings<float> Default_Settings;
 
 template <typename value_t>
 class Simulation{
@@ -86,3 +87,4 @@ class Simulation{
         void fill_w_mat();
 };
 
+typedef Simulation_Settings<float> Simulation_Settingsf;
