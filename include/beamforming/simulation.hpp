@@ -57,6 +57,8 @@ struct Simulation_Settings
     int n_samples; //for fourier transform
 };
 
+extern const Simulation_Settings<float> Default_Settings;
+
 template <typename value_t>
 class Simulation{
 

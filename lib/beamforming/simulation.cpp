@@ -27,6 +27,32 @@
 #include "beamforming/antenna_array.hpp"
 #include "utility/hpc_helpers.hpp"
 
+Simulation_Settings<float> Default_Settings{
+	    
+    1, //n_events
+    2*M_PI*24.6*1e9f, //w_min
+    2*M_PI*26.2*1e9f, // w_max
+    5.0f, //R
+	
+	0.00032,	//run_duration 1000 packets in default
+    1/(2*1e-4f), //mean_event_lifetime
+    0.5f, //trap_efficiency
+    -1, //seed
+						
+	false,				//manual
+	3.5f,				//e_r
+	0.0f,				//e_phi
+	2*M_PI*25.8e9f,		//w0
+							
+	30,						//N
+	1.0f,					//snr
+	3.2*1e9f,				//sample_rate
+	2*M_PI*24.6*1e9f,		//w_mix
+	1024,					//n_samples
+
+   // settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
+};
+
 template <typename value_t>
 Simulation<value_t>::Simulation(Simulation_Settings<value_t> settings):
 settings(settings),
