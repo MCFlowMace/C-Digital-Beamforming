@@ -53,6 +53,7 @@ class Reconstruction {
         
         value_t get_max_val(unsigned int bin, unsigned int packet=0);
         value_t get_mean_val(unsigned int bin, unsigned int packet=0);
+        arma::Mat<value_t> get_max_vals();
         
         Grid<value_t> get_grid() const;
 

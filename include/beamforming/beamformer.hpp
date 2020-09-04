@@ -1,5 +1,5 @@
 /*
- * reconstruction.h
+ * beamformer.hpp
  * 
  * Copyright 2020 Florian Thomas <flthomas@students.uni-mainz.de>
  * 
@@ -24,5 +24,32 @@
 
 #pragma once
 
-void run_test_f(int grid_size, int n_samples,float snr, int seed, bool weighted, 
-				float e_r, float e_phi, float f0, int N, float* dest);
+#include "beamforming/simulation.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/reconstruction_gpu.hpp"
+
+#include <armadillo>
+
+template <typename value_t>
+class Beamformer
+{
+	
+	public:
+	
+		Beamformer(Simulation_Settings<value_t> settings, int grid_size, 
+					int n_packets, bool weighted);
+
+		void get_next(value_t* dest);
+		arma::Mat<value_t> get_next_img();
+		arma::Mat<value_t> get_next_max_vals();
+	
+	private:
+	
+		Reconstruction_GPU<value_t> rec;
+		Simulation<value_t> sim;
+		
+		void run_next();
+		
+		uint32_t packet_counter;
+		int n_packets;
+};

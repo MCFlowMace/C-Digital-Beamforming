@@ -73,6 +73,8 @@ class Simulation{
                                                         int n_packets);
 
         arma::Mat<value_t> w_mat;
+        
+        Simulation_Settings<value_t> get_settings();
 
     private:
 

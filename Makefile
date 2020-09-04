@@ -81,7 +81,7 @@ pybeamforming: $(TARGET)
 	@echo "Python module complete!"
 	
 reconstruction: $(TARGET)
-	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/reconstruction/reconstruction.cpp $(TARGET) $(LIBS) -o $(BINDIR)/reconstruction
+	@$(NVCC) $(INCLUDES) $(NVCC_FLAGS) $(TESTDIR)/reconstruction/test_rec.cpp $(TARGET) $(LIBS) -o $(BINDIR)/test_rec
 	@echo "Linking complete!"
 	
 response_map: $(TARGET)

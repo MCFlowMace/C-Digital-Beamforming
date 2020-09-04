@@ -131,4 +131,23 @@ value_t Reconstruction<value_t>::get_max_val(unsigned int bin,
     return max_val;
 }
 
+template <typename value_t>
+arma::Mat<value_t> Reconstruction<value_t>::get_max_vals()
+{
+	
+	arma::Mat<value_t> max_vals(frequency.n_elem, n_packets);
+	
+	for(int j=0; j<n_packets; ++j) {
+		
+#if defined PARALLEL || defined USE_GPU
+		#pragma omp parallel for schedule(static)
+#endif
+		for(int i=0; i<frequency.n_elem; ++i)
+			max_vals(i,j) = this->get_max_val(i, j);
+		
+	}
+	
+	return max_vals;
+}
+
 DEFINE_TEMPLATES(Reconstruction)

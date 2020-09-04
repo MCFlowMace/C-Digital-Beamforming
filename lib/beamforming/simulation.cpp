@@ -27,7 +27,7 @@
 #include "beamforming/antenna_array.hpp"
 #include "utility/hpc_helpers.hpp"
 
-Simulation_Settings<float> Default_Settings{
+const Simulation_Settings<float> Default_Settings{
 	    
     1, //n_events
     2*M_PI*24.6*1e9f, //w_min
@@ -64,6 +64,12 @@ w_mat((int) (settings.sample_rate*settings.run_duration),settings.n_events)
 		this->generation(settings.seed);
 
     this->fill_w_mat();
+}
+
+template <typename value_t>
+Simulation_Settings<value_t> Simulation<value_t>::get_settings()
+{
+	return settings;
 }
 
 template <typename value_t>
