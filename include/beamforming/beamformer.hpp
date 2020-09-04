@@ -53,3 +53,6 @@ class Beamformer
 		uint32_t packet_counter;
 		int n_packets;
 };
+
+
+typedef Beamformer<float> Beamformerf;
