@@ -12,7 +12,7 @@ PYTHON=python
 
 #NVCC options
 NVCC=nvcc
-NVCC_FLAGS= -arch=$(ARCH) -std=c++11 -I -dc --expt-extended-lambda --use_fast_math -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp -Xcompiler -fPIC
+NVCC_FLAGS= -arch=$(ARCH) -std=c++14 -I -dc --expt-extended-lambda --use_fast_math -D$(EXEC) -DARMA_ALLOW_FAKE_GCC -Xcompiler -fopenmp -Xcompiler -fPIC
 
 #libpacker
 LIBPACK=ar
