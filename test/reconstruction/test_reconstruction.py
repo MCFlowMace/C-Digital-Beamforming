@@ -77,7 +77,7 @@ def run_reconstruction(binary, grid_size, n_samples, snr,
 
 def main(args):
 	
-    binary = "../../bin/reconstruction "
+    binary = "../../build/bin/test_rec "
     R=5
     r=3.5
     w0=26.0016
@@ -89,11 +89,12 @@ def main(args):
     N = 30
 
     data = run_reconstruction(binary, grid_size, n_samples, snr, seed, r, phi, w0, N)
-    
-    plot_result(R, data[438], "beamforming_rec_test.pdf")
 
-    data = np.loadtxt("beamforming_rec_ref.dat")
-    plot_result(R, data, "beamforming_rec_ref.pdf")
+    
+    plot_result(R, data[0], "beamforming_rec_test.pdf")
+
+    #data = np.loadtxt("beamforming_rec_ref.dat")
+    #plot_result(R, data, "beamforming_rec_ref.pdf")
 
     return 0
 
