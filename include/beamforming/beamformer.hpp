@@ -37,9 +37,11 @@ class Beamformer
 	public:
 	
 		Beamformer(Simulation_Settings<value_t> settings, int grid_size, 
-					int n_packets, bool weighted);
+					int n_packets, bool weighted, bool full_frequency);
 
 		void get_next(value_t* dest);
+		void get_result(std::complex<value_t> *src, 
+					value_t *dest);
 		arma::Mat<value_t> get_next_img();
 		arma::Mat<value_t> get_next_max_vals();
 	
@@ -49,6 +51,7 @@ class Beamformer
 		Simulation<value_t> sim;
 		
 		void run_next();
+		void run(std::vector<std::complex<value_t>> data);
 		
 		uint32_t packet_counter;
 		int n_packets;

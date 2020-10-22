@@ -175,7 +175,7 @@ std::vector<std::complex<value_t>> Simulation<value_t>::observation_flat(
 
     value_t dt = 1/settings.sample_rate;
     
-    int bins = Data_Packet<value_t>::get_frequency(settings.n_samples, dt).n_elem;
+    int bins = Data_Packet<value_t>::get_frequency(settings.n_samples, dt, false).n_elem;
     std::vector<std::complex<value_t>> data(settings.N*n_packets*bins);
     
 

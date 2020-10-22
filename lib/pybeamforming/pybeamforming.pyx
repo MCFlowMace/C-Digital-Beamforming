@@ -1,6 +1,7 @@
 
 import numpy
 cimport numpy
+import ctypes
 
 from libcpp cimport bool
 from libcpp.memory cimport make_shared, shared_ptr
@@ -32,9 +33,10 @@ cdef extern from "beamforming/simulation.hpp":
 cdef extern from "beamforming/beamformer.hpp":
     cdef cppclass Beamformerf:
         Beamformerf(Simulation_Settingsf settings, int grid_size, 
-                    int n_packets, bool weighted) except +
+                    int n_packets, bool weighted, bool full_frequency) except +
 
         void get_next(float* dest)
+        void get_result(float complex* src, float* dest)
 		
 cdef class PySimulation_Settings:
     cdef Simulation_Settingsf c_settings
@@ -188,9 +190,9 @@ cdef class PyBeamformer:
     cdef public int grid_size
 
     def __cinit__(self, PySimulation_Settings settings, int grid_size,
-                    int n_packets, bool weighted):
+                    int n_packets, bool weighted, bool full_frequency):
         self.bf = make_shared[Beamformerf](settings.c_settings, grid_size,
-                                            n_packets, weighted)
+                                            n_packets, weighted, full_frequency)
                                             
         self.settings = settings
         self.n_packets = n_packets
@@ -206,6 +208,27 @@ cdef class PyBeamformer:
                         dtype=numpy.float32)
 
         self.bf.get().get_next(&res[0])
+
+        res_ = res.reshape(self.n_packets, self.grid_size, self.grid_size, bins)
+        res_ = numpy.moveaxis(res_,[1,2,3],[2,3,1])
+        
+        ind = (numpy.isfinite(res_))^True
+        res_[ind] = 0
+        res_[res_==-1] = 0
+
+        return res_
+        
+    def get_result(self, data):
+
+        n_samples = data.shape[-1]
+        print(data.shape)
+        bins = n_samples
+        cdef numpy.ndarray[ndim=1, dtype=numpy.float32_t] res = numpy.zeros(
+                        self.grid_size*self.grid_size*bins*self.n_packets, 
+                        dtype=numpy.float32)
+
+        cdef float complex[:] data_in = data.astype(numpy.complex64).flatten()
+        self.bf.get().get_result(&data_in[0], &res[0])
 
         res_ = res.reshape(self.n_packets, self.grid_size, self.grid_size, bins)
         res_ = numpy.moveaxis(res_,[1,2,3],[2,3,1])

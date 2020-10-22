@@ -28,12 +28,14 @@
 
 template <typename value_t>
 Beamformer<value_t>::Beamformer(Simulation_Settings<value_t> settings, 
-								int grid_size, int n_packets, bool weighted):
+				int grid_size, int n_packets, 
+				bool weighted, bool full_frequency):
 sim{settings},
 rec{grid_size, 
 	n_packets, 
 	Data_Packet<value_t>::get_frequency(settings.n_samples, 
-										1/settings.sample_rate), 
+						1/settings.sample_rate,
+						full_frequency), 
 	Antenna_Array<value_t>{settings.N, 
 							settings.R, 
 							settings.snr, 
@@ -49,6 +51,7 @@ packet_counter{0}
 template <typename value_t>
 void Beamformer<value_t>::run_next()
 {
+    std::cout << "running run_next" << std::endl;
 	Simulation_Settings<value_t> settings{sim.get_settings()};
     int n_samples = settings.n_samples;
     value_t dt = 1/settings.sample_rate;
@@ -60,14 +63,33 @@ void Beamformer<value_t>::run_next()
 													t_start, n_packets);
 	TIMERSTOP(SAMPLE)
 
-	rec.run(data);
+	this->run(data);
 	
+}
+
+template <typename value_t>
+void Beamformer<value_t>::run(std::vector<std::complex<value_t>> data)
+{
+	rec.run(data);	
 }
 
 template <typename value_t>
 void Beamformer<value_t>::get_next(value_t *dest)
 {
 	this->run_next();
+	this->rec.copy_res(dest);
+}
+
+template <typename value_t>
+void Beamformer<value_t>::get_result(std::complex<value_t> *src, 
+					value_t *dest)
+{
+        Simulation_Settings<value_t> settings{sim.get_settings()};
+    
+	size_t len = this->n_packets*settings.N*settings.n_samples;
+	std::vector<std::complex<value_t>> data;
+	data.assign(src, src+len);
+	this->run(data);
 	this->rec.copy_res(dest);
 }
 
@@ -80,7 +102,7 @@ arma::Mat<value_t> Beamformer<value_t>::get_next_img()
     Simulation_Settings<value_t> settings{sim.get_settings()};
     
     arma::Col<value_t> frequency{Data_Packet<value_t>::get_frequency(settings.n_samples, 
-										1/settings.sample_rate)};
+										1/settings.sample_rate, false)};
 										
 	value_t delta_f = frequency[1]-frequency[0];
     

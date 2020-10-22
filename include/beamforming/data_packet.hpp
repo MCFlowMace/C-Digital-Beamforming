@@ -36,7 +36,8 @@ class Data_Packet {
         arma::Col<std::complex<value_t>> frequency_data;
         arma::Col<value_t> frequency;
         
-        static arma::Col<value_t> get_frequency(int n_samples, value_t dt);
+        static arma::Col<value_t> get_frequency(int n_samples, value_t dt,
+                                                bool full_frequency);
 
         arma::Col<value_t> time;
 
@@ -44,5 +45,9 @@ class Data_Packet {
 
         int n_samples;
         value_t timestep;
+        
+    private:
+        static arma::Col<value_t> get_frequency_old(int n_samples, value_t dt);
+        static arma::Col<value_t> get_frequency_new(int n_samples, value_t dt);
 };
 

@@ -37,7 +37,7 @@ time_data(std::move(time_data))
     n_samples=this->time.n_elem;
     timestep=this->time[1]-this->time[0];
 
-	frequency=get_frequency(n_samples, timestep);
+	frequency=get_frequency(n_samples, timestep, false);
 	
 	int upper = frequency.n_elem;
 
@@ -46,9 +46,21 @@ time_data(std::move(time_data))
 }
 
 template <typename value_t>
-arma::Col<value_t> Data_Packet<value_t>::get_frequency(int n_samples, value_t dt) {
+arma::Col<value_t> Data_Packet<value_t>::get_frequency(int n_samples, 
+							value_t dt,
+							bool full_frequency) {
 	
-	int n = n_samples/2 + 1; //integer division intended
+    if(full_frequency)
+	return get_frequency_new(n_samples, dt);
+    else
+	return get_frequency_old(n_samples, dt);
+}
+
+template <typename value_t>
+arma::Col<value_t> Data_Packet<value_t>::get_frequency_old(int n_samples, 
+							value_t dt) {
+	
+    int n = n_samples/2 + 1; //integer division intended
 
 	//see scipy.fft.rfftfreq    
     
@@ -59,6 +71,33 @@ arma::Col<value_t> Data_Packet<value_t>::get_frequency(int n_samples, value_t dt
         _frequency[i] = i/(dt*n_samples);
 
 	return _frequency;
+}
+
+template <typename value_t>
+arma::Col<value_t> Data_Packet<value_t>::get_frequency_new(int n_samples, 
+							value_t dt) {
+
+	//see scipy.fft.rfftfreq   
+    int start, end;
+    
+    if(n_samples%2 == 0) {
+	start = -n_samples/2;
+	end = n_samples/2;
+    } else {
+	start = -(n_samples-1)/2;
+	end = (n_samples-1)/2+1;
+    }
+    
+   // std::cout << start << " " << end << " " << n_samples << std::endl;
+
+    arma::Col<value_t> _frequency(n_samples);
+
+    for(int i=start; i<end; ++i)
+        _frequency[i-start] = i/(dt*n_samples);
+
+    //_frequency.print();
+    
+    return _frequency;
 }
 
 DEFINE_TEMPLATES(Data_Packet)
