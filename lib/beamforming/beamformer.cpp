@@ -29,7 +29,8 @@
 template <typename value_t>
 Beamformer<value_t>::Beamformer(Simulation_Settings<value_t> settings, 
 				int grid_size, int n_packets, 
-				bool weighted, bool full_frequency):
+				bool weighted, bool full_frequency,
+				value_t r_grid):
 sim{settings},
 rec{grid_size, 
 	n_packets, 
@@ -41,7 +42,8 @@ rec{grid_size,
 							settings.snr, 
 							settings.w_mix, 
 							settings.sample_rate}, 
-	weighted},
+	weighted,
+	r_grid},
 n_packets{n_packets},
 packet_counter{0}
 {

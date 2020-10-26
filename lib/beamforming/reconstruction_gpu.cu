@@ -163,6 +163,8 @@ __device__ inline value_t beamforming(value_t const fc, int const N,
 {
 	
 	thrust::complex<value_t> accum(0);
+	
+	//printf("Antennas: %d\n", N);
 	for(int l=0; l<N; ++l) {
 		value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
 		
@@ -195,7 +197,7 @@ __global__ void reconstruction_red(thrust::complex<value_t>* samples,
 
     if(tid<grid_size*grid_size*bins) {
 		
-		int k = tid%bins; //frequency
+	int k = tid%bins; //frequency
         int i = (tid/bins)%grid_size; //y
         int j = tid/(bins*grid_size); //x
 
@@ -276,8 +278,10 @@ __global__ void reconstruction_red2(thrust::complex<value_t>* samples,
 template <typename value_t>
 Reconstruction_GPU<value_t>::Reconstruction_GPU(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
-						const Antenna_Array<value_t>& array, bool weighted):
-Reconstruction<value_t>(grid_size, n_packets, frequency, array, weighted)
+						const Antenna_Array<value_t>& array, 
+						bool weighted, 
+						value_t r_grid):
+Reconstruction<value_t>(grid_size, n_packets, frequency, array, weighted, r_grid)
 {
 	init_gpu();
 }

@@ -37,7 +37,7 @@ class Reconstruction {
         Reconstruction(int grid_size, int n_packets,
 						arma::Col<value_t> frequency,
                         const Antenna_Array<value_t>& array,
-                        bool weighted);
+                        bool weighted, value_t r_grid);
 
 
         //~Reconstruction();

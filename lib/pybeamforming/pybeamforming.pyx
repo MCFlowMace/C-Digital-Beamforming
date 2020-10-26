@@ -29,14 +29,17 @@ cdef extern from "beamforming/simulation.hpp":
         float sample_rate
         float w_mix
         int n_samples
-
+        
+        
 cdef extern from "beamforming/beamformer.hpp":
     cdef cppclass Beamformerf:
         Beamformerf(Simulation_Settingsf settings, int grid_size, 
-                    int n_packets, bool weighted, bool full_frequency) except +
+                    int n_packets, bool weighted, bool full_frequency,
+                    float r_grid) except +
 
         void get_next(float* dest)
         void get_result(float complex* src, float* dest)
+           
 		
 cdef class PySimulation_Settings:
     cdef Simulation_Settingsf c_settings
@@ -181,8 +184,7 @@ cdef class PySimulation_Settings:
     @n_samples.setter
     def n_samples(self, val):
         self.c_settings.n_samples = val
-	
-		
+        
 cdef class PyBeamformer:
     cdef shared_ptr[Beamformerf] bf
     cdef public PySimulation_Settings settings
@@ -190,9 +192,11 @@ cdef class PyBeamformer:
     cdef public int grid_size
 
     def __cinit__(self, PySimulation_Settings settings, int grid_size,
-                    int n_packets, bool weighted, bool full_frequency):
+                    int n_packets, bool weighted, bool full_frequency,
+                    float r_grid):
         self.bf = make_shared[Beamformerf](settings.c_settings, grid_size,
-                                            n_packets, weighted, full_frequency)
+                                            n_packets, weighted, 
+                                            full_frequency, r_grid)
                                             
         self.settings = settings
         self.n_packets = n_packets
@@ -234,8 +238,10 @@ cdef class PyBeamformer:
         res_ = numpy.moveaxis(res_,[1,2,3],[2,3,1])
         
         ind = (numpy.isfinite(res_))^True
+        
         res_[ind] = 0
         res_[res_==-1] = 0
 
         return res_
+        
         

@@ -37,7 +37,8 @@ class Beamformer
 	public:
 	
 		Beamformer(Simulation_Settings<value_t> settings, int grid_size, 
-					int n_packets, bool weighted, bool full_frequency);
+					int n_packets, bool weighted, bool full_frequency,
+					value_t r_grid);
 
 		void get_next(value_t* dest);
 		void get_result(std::complex<value_t> *src, 
@@ -59,3 +60,4 @@ class Beamformer
 
 
 typedef Beamformer<float> Beamformerf;
+typedef Beamformer<double> Beamformerd;

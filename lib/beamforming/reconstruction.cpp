@@ -32,13 +32,15 @@
 
 template <typename value_t>
 Reconstruction<value_t>::Reconstruction(int grid_size, int n_packets,
-						arma::Col<value_t> frequency,
-                        const Antenna_Array<value_t>& array, bool weighted):
+					arma::Col<value_t> frequency,
+				    const Antenna_Array<value_t>& array, 
+				    bool weighted, value_t r_grid):
 grid_size(grid_size),
 grid(grid_size),
 frequency(frequency),
 n_packets(n_packets),
 bins(frequency.n_elem),
+R(r_grid),
 weighted(weighted)
 {
     //frequency = sample.frequency;
@@ -57,7 +59,7 @@ void Reconstruction<value_t>::set_antenna_array(const Antenna_Array<value_t>& ar
 
     //this->array=array;
     N = array.N;
-    R = array.R;
+    //R = array.R;
     wmix = array.wmix;
 
     arma::Mat<value_t> coords(2,N);
