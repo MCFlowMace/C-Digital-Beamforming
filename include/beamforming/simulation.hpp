@@ -88,3 +88,4 @@ class Simulation{
 };
 
 typedef Simulation_Settings<float> Simulation_Settingsf;
+typedef Simulation_Settings<double> Simulation_Settingsd;
