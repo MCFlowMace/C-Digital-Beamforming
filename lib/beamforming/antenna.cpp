@@ -106,7 +106,7 @@ arma::Col<value_t> Antenna<value_t>::get_mixed_sample(
                 value_t delta_t = this->time_delay(events[j], t[i]);
                 value_t phi = this->spiral_phase(events[j], t[i]);
                 value_t dist = this->distance_to_electron(events[j], t[i]);
-                accum+= 1/dist*emission(t[i], w-w_mix, -delta_t*w-phi);
+                accum+= 1/dist*emission(t[i], w-w_mix, -delta_t*w+phi);
             }
 
         }

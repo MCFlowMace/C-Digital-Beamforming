@@ -166,7 +166,7 @@ __device__ inline value_t beamforming(value_t const fc, int const N,
 	
 	//printf("Antennas: %d\n", N);
 	for(int l=0; l<N; ++l) {
-		value_t phi = time_delays[(j*grid_size+i)*N+l]*fc + phis[(j*grid_size+i)*N+l];
+		value_t phi = time_delays[(j*grid_size+i)*N+l]*fc - phis[(j*grid_size+i)*N+l];
 		
 		thrust::complex<value_t> phase(__cosf(phi), __sinf(phi));
 		
