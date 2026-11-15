@@ -21,8 +21,8 @@
  *
  */
 
-#include "reconstruction.hpp"
-#include "reconstruction_gpu.hpp"
+#include "beamforming/reconstruction.hpp"
+#include "beamforming/reconstruction_gpu.hpp"
  
 #ifdef PRECISION
 	typedef double value_t;
@@ -41,11 +41,11 @@
 #include <armadillo>
 #include <cstdlib>
 
-#include "electron.hpp"
-#include "antenna.hpp"
-#include "antenna_array.hpp"
-#include "simulation.hpp"
-#include "hpc_helpers.hpp"
+#include "beamforming/electron.hpp"
+#include "beamforming/antenna.hpp"
+#include "beamforming/antenna_array.hpp"
+#include "beamforming/simulation.hpp"
+#include "utility/hpc_helpers.hpp"
 
 int main(int argc, char **argv)
 {
@@ -86,9 +86,9 @@ int main(int argc, char **argv)
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, 
 									settings.w_mix, settings.sample_rate);
     arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(
-														settings.n_samples, dt);
+														settings.n_samples, dt, false);
 
-    Rec_Type rec(grid_size, n_packets, frequency, array);
+    Rec_Type rec(grid_size, n_packets, frequency, array, false, settings.R);
     
 	value_t t_start{0};
 	auto grid_coords = rec.get_grid().coords;

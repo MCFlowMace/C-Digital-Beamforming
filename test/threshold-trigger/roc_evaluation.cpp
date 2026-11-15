@@ -25,9 +25,9 @@
 #include <iostream>
 #include <vector>
 
-#include "threshold_trigger.hpp"
-#include "ROC_evaluator.hpp"
-#include "confusion_matrix.hpp"
+#include "beamforming/threshold_trigger.hpp"
+#include "beamforming/ROC_evaluator.hpp"
+#include "beamforming/confusion_matrix.hpp"
 
 int main(int argc, char **argv)
 {

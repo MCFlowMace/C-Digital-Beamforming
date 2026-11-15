@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 	settings.manual=true;
 	settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
 	
-	Beamformer<float> bf{settings, grid_size, n_packets, weighted};
+	Beamformer<float> bf{settings, grid_size, n_packets, weighted, false, settings.R};
 	
 	auto img = bf.get_next_img();
 	

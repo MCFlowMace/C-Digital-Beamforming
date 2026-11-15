@@ -23,12 +23,12 @@
 
 
 #include <iostream>
-#include "event.hpp"
-#include "event_generator.hpp"
+#include "beamforming/event.hpp"
+#include "beamforming/event_generator.hpp"
 #include <cmath>
 #include <vector>
 #include <stdio.h>
-#include "hpc_helpers.hpp"
+#include "utility/hpc_helpers.hpp"
 
 //#define float double
 

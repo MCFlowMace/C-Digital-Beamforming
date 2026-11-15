@@ -99,11 +99,11 @@ int main(int argc, char **argv)
     Antenna_Array<value_t> array(settings.N, settings.R, settings.snr, 
 									settings.w_mix, settings.sample_rate, settings.seed);
     arma::Col<value_t> frequency = Data_Packet<value_t>::get_frequency(
-														settings.n_samples, dt);
+														settings.n_samples, dt, false);
 
     int n_packets = 100;
 
-    Rec_Type rec(grid_size, n_packets, frequency, array);
+    Rec_Type rec(grid_size, n_packets, frequency, array, false, settings.R);
     
     std::vector<std::unique_ptr<Binary_Classifier<float>>> triggers;
     std::vector<Confusion_Matrix> cm_matrices;

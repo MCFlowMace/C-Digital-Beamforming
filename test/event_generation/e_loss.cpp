@@ -23,8 +23,8 @@
 
 
 #include <iostream>
-#include "event.hpp"
-#include "event_generator.hpp"
+#include "beamforming/event.hpp"
+#include "beamforming/event_generator.hpp"
 #include <cmath>
 #include <vector>
 #include <stdio.h>
