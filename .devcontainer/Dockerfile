@@ -15,7 +15,6 @@ ENV CC=gcc-9 \
     CXX=g++-9 \
     CUDAHOSTCXX=g++-9
 
-# Plots können ohne grafischen Desktop in Dateien gespeichert werden.
 ENV MPLBACKEND=Agg
 
 WORKDIR /project
