@@ -1,0 +1,25 @@
+
+{
+  "name": "C++ CUDA Development",
+
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+
+  "runArgs": [
+    "--gpus=all"
+  ],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  }
+}
