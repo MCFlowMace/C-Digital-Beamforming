@@ -161,7 +161,7 @@ def main(args):
     binary = Path(__file__).resolve().parents[2] / "build/bin/threshold-trigger"
     n_samples = 1000
     grid_size_vals = [25, 50, 100]
-    snr_vals = [0.1]
+    snr_vals = [0.1, 0.5]
     n_packets = 1000
     r_vals = np.linspace(0, R, 100)
     phi = 0.0
