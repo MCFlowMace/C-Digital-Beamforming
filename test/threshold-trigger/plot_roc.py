@@ -24,10 +24,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+import io
+import subprocess
+from pathlib import Path
 import seaborn as sns
 import time
 from statsmodels.stats.proportion import proportion_confint
+
 
 def get_roc(data):
 	
@@ -49,6 +52,7 @@ def get_roc(data):
 	data_out[:,5] = errors[1] - data_out[:,3]
 	
 	return data_out
+
     
 def get_auc(data):
     
@@ -58,6 +62,7 @@ def get_auc(data):
     auc = np.trapz(y=y, x=x)
     
     return auc
+
 
 def plot_curve(ax, data, label):
     
@@ -77,6 +82,7 @@ def create_roc_plot(fig, ax, snr):
     ax.set_ylim(-0.1,1.1)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig("roc_"+str(int(10*snr))+".pdf")
+
         
 def plot_curve_old(ax, data, label):
 
@@ -86,19 +92,29 @@ def plot_curve_old(ax, data, label):
     auc = np.trapz(y=y, x=x)
     ax.errorbar(data[:,0], data[:,2], xerr=data[:,1], yerr=data[:,3], 
                                 label=label + " AUC={:.2f}".format(auc), ls='None')                               
-                                
-def run_threshold_trigger(binary, grid_size, n_samples, snr, 
-                            n_packets, seed, r, phi, w0):
-                                
-    os.system(binary + str(grid_size) + " "\
-                + str(n_samples) + " " + str(snr) + " "\
-                + str(n_packets) + " " + str(seed) + " "\
-                + str(r) + " " + str(phi) + " " + str(w0) + " "\
-                + " >result.out")
-                
-    data = np.loadtxt("result.out")
-    os.system("rm result.out")
-    return data
+
+
+def run_threshold_trigger(binary, grid_size, n_samples, snr,
+                          n_packets, seed, r, phi, w0):
+    result = subprocess.run(
+        [
+            str(binary),
+            str(grid_size),
+            str(n_samples),
+            str(snr),
+            str(n_packets),
+            str(seed),
+            str(r),
+            str(phi),
+            str(w0),
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+    return np.loadtxt(io.StringIO(result.stdout))
+
     
 def get_rand_seed():
     
@@ -109,6 +125,7 @@ def get_rand_seed():
              ((t & 0x000000ff) << 24)
              
     return seed
+
     
 def plot_x_AUC(x, AUC, snr_vals, name, xlabel, grid_boundaries):
     
@@ -132,6 +149,7 @@ def plot_x_AUC(x, AUC, snr_vals, name, xlabel, grid_boundaries):
     plt.savefig(name+".pdf")
     plt.close(fig)
 
+
 def main(args):
 
     sns.set()
@@ -139,7 +157,7 @@ def main(args):
    
     R=5.0
     
-    binary = "../../bin/threshold-trigger "
+    binary = Path(__file__).resolve().parents[2] / "build/bin/threshold-trigger"
     n_samples = 1000
     grid_size_vals = [25, 50, 100]
     snr_vals = [0.1]
@@ -152,29 +170,23 @@ def main(args):
     print(seed)
     
     #seed = 123456
-    
-  
     grid_size = grid_size_vals[0]
     
     grid_boundaries = np.linspace(-R,R,grid_size+1)
     
-    """
+    # auc_vals = np.empty(shape=[len(snr_vals),r_vals.shape[0]])
     
-    auc_vals = np.empty(shape=[len(snr_vals),r_vals.shape[0]])
-    
-    for i in range(len(snr_vals)):
-        for j, r in enumerate(r_vals):
+    # for i in range(len(snr_vals)):
+    #     for j, r in enumerate(r_vals):
         
-            data = run_threshold_trigger(binary, grid_size_vals[0], n_samples, snr_vals[i], 
-                                            n_packets, seed, r, phi, w0)
+    #         data = run_threshold_trigger(binary, grid_size_vals[0], n_samples, snr_vals[i], 
+    #                                         n_packets, seed, r, phi, w0)
             
-            data = get_roc(data)
+    #         data = get_roc(data)
 
-            auc_vals[i,j] = get_auc(data) #plot_curve(ax, data, label="g="+str(grid_size_vals[0]))
+    #         auc_vals[i,j] = get_auc(data) #plot_curve(ax, data, label="g="+str(grid_size_vals[0]))
     
-    plot_x_AUC(r_vals, auc_vals, snr_vals, 'R_AUC', 'r[cm]', grid_boundaries)
-        
-   """
+    # plot_x_AUC(r_vals, auc_vals, snr_vals, 'R_AUC', 'r[cm]', grid_boundaries)
 
     for snr in snr_vals:
         fig, ax = plt.subplots()

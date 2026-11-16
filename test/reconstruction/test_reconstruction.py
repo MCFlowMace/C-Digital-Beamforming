@@ -24,9 +24,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
-from scipy.fft import rfft, rfftfreq, fft, fftfreq, irfft, fftshift, ifft, fft2
-import os
+import io
+import subprocess
+from pathlib import Path
+
 
 def plot_result(R, data, name, save=True):
 
@@ -53,48 +54,34 @@ def plot_result(R, data, name, save=True):
         
     plt.close(fig)
 
-def run_reconstruction(binary, grid_size, n_samples, snr, 
-							seed, r, phi, w0, N, weighted=1):
-                                
-    cmd = binary + str(grid_size) + " "\
-                + str(n_samples) + " " + str(snr) + " "\
-                + str(seed) + " " + str(weighted) + " "\
-                + str(r) + " " + str(phi) + " " + str(w0) + " "\
-                + str(N) + " >result.out"
-    
-    print(cmd)
-    os.system(cmd)
-                
-    data = np.loadtxt("result.out")
-    os.system("rm result.out")
-    
-    data = data.reshape((-1, grid_size, grid_size))
-    ind = (np.isfinite(data))^True
-    data[ind] = 0
-    data[data==-1] = 0
-    
+
+def run_reconstruction(binary):
+    result = subprocess.run(
+        [str(binary)],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+    # Beamformer prints this diagnostic before the matrix.
+    output = "\n".join(
+        line for line in result.stdout.splitlines()
+        if line.strip() != "running run_next"
+    )
+
+    data = np.loadtxt(io.StringIO(output))
+    data[~np.isfinite(data)] = 0
+    data[data == -1] = 0
+
     return data
 
+
 def main(args):
-	
-    binary = "../../build/bin/test_rec "
-    R=5
-    r=3.5
-    w0=26.0016
-    phi = 0
-    snr=0.5
-    seed=-1
-    n_samples=1000
-    grid_size=100
-    N = 30
+    binary = Path(__file__).resolve().parents[2] / "build/bin/test_rec"
+    R = 5
 
-    data = run_reconstruction(binary, grid_size, n_samples, snr, seed, r, phi, w0, N)
-
-    
-    plot_result(R, data[0], "beamforming_rec_test.pdf")
-
-    #data = np.loadtxt("beamforming_rec_ref.dat")
-    #plot_result(R, data, "beamforming_rec_ref.pdf")
+    data = run_reconstruction(binary)
+    plot_result(R, data, "beamforming_rec_test.pdf")
 
     return 0
 
