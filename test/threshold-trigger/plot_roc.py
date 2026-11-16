@@ -23,6 +23,7 @@
 #
 
 import numpy as np
+from scipy.integrate import trapezoid
 import matplotlib.pyplot as plt
 import io
 import subprocess
@@ -59,7 +60,7 @@ def get_auc(data):
     ind = np.argsort(data[:,0])
     x = data[ind,0]
     y = data[ind,3]
-    auc = np.trapz(y=y, x=x)
+    auc = trapezoid(y=y, x=x)
     
     return auc
 
@@ -89,7 +90,7 @@ def plot_curve_old(ax, data, label):
     ind = np.argsort(data[:,0])
     x = data[ind,0]
     y = data[ind,2]
-    auc = np.trapz(y=y, x=x)
+    auc = trapezoid(y=y, x=x)
     ax.errorbar(data[:,0], data[:,2], xerr=data[:,1], yerr=data[:,3], 
                                 label=label + " AUC={:.2f}".format(auc), ls='None')                               
 
