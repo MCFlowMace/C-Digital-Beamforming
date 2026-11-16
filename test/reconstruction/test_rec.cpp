@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	
 	int n_packets = 2;
 	int grid_size = 100;
-	bool weighted = true;
+	bool weighted = false;
 	settings.manual=true;
 	settings.run_duration = n_packets*settings.n_samples/settings.sample_rate;
 	

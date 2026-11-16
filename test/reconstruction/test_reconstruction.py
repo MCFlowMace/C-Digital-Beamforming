@@ -34,7 +34,7 @@ def plot_result(R, data, name, save=True):
     fig, ax = plt.subplots()
 
     im_masked = np.ma.masked_where(data==0,data)
-    im=ax.imshow(im_masked,extent=(-R,R,-R,R),origin='lower')
+    im = ax.imshow(im_masked.T, extent=(-R,R,-R,R), origin='lower')
     #im=ax.imshow(np.transpose(self.grid_phis[0]),extent=(-R,R,-R,R),origin='lower')
     #ax.plot(electron.x,electron.y,c='r',marker='o',ms=2)
     fig.colorbar(im)
