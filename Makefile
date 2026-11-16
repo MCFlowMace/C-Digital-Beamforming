@@ -1,6 +1,6 @@
 #parameters
 EXEC=USE_GPU
-ARCH=sm_70
+ARCH=sm_75
 
 #c++ compiler options
 GCC=g++
