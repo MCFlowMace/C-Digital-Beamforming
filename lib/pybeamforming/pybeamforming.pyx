@@ -63,7 +63,7 @@ cdef extern from "beamforming/beamformer.hpp":
         void get_result(float complex* src, float* dest)
         
     cdef cppclass Beamformerd:
-        Beamformerf(Simulation_Settingsd settings, int grid_size, 
+        Beamformerd(Simulation_Settingsd settings, int grid_size, 
                     int n_packets, bool weighted, bool full_frequency,
                     double r_grid) except +
 
